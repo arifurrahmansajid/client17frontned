@@ -1,133 +1,122 @@
 "use client";
 
-import { TopHeader } from "@/components/layout/top-header";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Wallet, 
-  ArrowDownToLine, 
-  ArrowUpRight, 
-  Settings, 
-  HeadphonesIcon, 
-  LogOut, 
-  CreditCard, 
-  Box, 
-  Info,
-  ChevronRight,
-  ShieldCheck
+import {
+  Wallet, ArrowUpFromLine, ArrowDownToLine, Package, HeadphonesIcon, Info, Settings, LogOut,
+  ChevronRight, User, Shield, Bell, CreditCard, History
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
+const MENU_ITEMS = [
+  { icon: CreditCard, label: "Wallet Accounts", href: "/wallet-accounts", color: "bg-blue-50 text-primary" },
+  { icon: Package, label: "My Products", href: "/my-products", color: "bg-indigo-50 text-indigo-600" },
+  { icon: History, label: "Transaction History", href: "/transactions", color: "bg-violet-50 text-violet-600" },
+  { icon: Bell, label: "Notifications", href: "/notifications", color: "bg-amber-50 text-amber-600" },
+  { icon: HeadphonesIcon, label: "Customer Service", href: "/support", color: "bg-emerald-50 text-emerald-600" },
+  { icon: Info, label: "About Platform", href: "/about", color: "bg-slate-100 text-slate-600" },
+  { icon: Shield, label: "Platform Rules", href: "/rules", color: "bg-rose-50 text-rose-600" },
+  { icon: Settings, label: "Settings", href: "/settings", color: "bg-slate-100 text-slate-600" },
+];
+
 export default function MinePage() {
-  const menuItems = [
-    { icon: Wallet, label: "Wallet Accounts", href: "/wallet-accounts" },
-    { icon: Box, label: "My Products", href: "/my-products" },
-    { icon: CreditCard, label: "Transaction History", href: "/transactions" },
-    { icon: HeadphonesIcon, label: "Customer Service", href: "/support" },
-    { icon: Info, label: "About Platform", href: "/about" },
-    { icon: ShieldCheck, label: "Platform Rules", href: "/rules" },
-    { icon: Settings, label: "Settings", href: "/settings" },
-  ];
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
-      <TopHeader title="My Profile" showBack={false} />
-      
-      <div className="pt-14">
-        {/* Profile Header */}
-        <div className="bg-primary px-4 pt-6 pb-12 rounded-b-[32px] text-primary-foreground shadow-sm">
-          <div className="flex items-center gap-4">
-            <Avatar className="w-16 h-16 border-2 border-white/20 shadow-md">
-              <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
-              <AvatarFallback>USER</AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="text-xl font-bold">+233 55 *** 1234</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="bg-white/20 px-2 py-0.5 rounded text-xs font-medium backdrop-blur-sm">VIP 2</span>
-              </div>
+      {/* Profile Header */}
+      <div className="bg-gradient-to-br from-[#0057D9] to-[#1D4ED8] px-4 pt-12 pb-20 relative overflow-hidden">
+        {/* decorative circles */}
+        <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5" />
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-white/5" />
+
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="w-18 h-18 relative">
+            <div className="w-[72px] h-[72px] rounded-3xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+              <User size={32} className="text-white" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full border-2 border-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-white">+233 55 *** 1234</h2>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-[11px] font-bold text-white/90 bg-white/20 px-2.5 py-1 rounded-full">VIP 2 Member</span>
+              <span className="text-[11px] text-white/60">ID: 58291</span>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Balance Card - overlaps the header */}
-        <div className="px-4 -mt-8 relative z-10">
-          <Card className="border-0 shadow-lg shadow-slate-200/50 rounded-[20px] overflow-hidden">
-            <CardContent className="p-6">
-              <div className="text-center mb-6">
-                <p className="text-sm font-medium text-slate-500 mb-1">Total Balance</p>
-                <h3 className="text-3xl font-bold text-slate-900">GHS 4,520.00</h3>
-              </div>
-              
-              <div className="flex justify-between items-center mb-6 px-4">
-                <div className="text-center">
-                  <p className="text-xs text-slate-500 mb-1">Today's Income</p>
-                  <p className="font-bold text-emerald-600">GHS +82.00</p>
-                </div>
-                <div className="h-10 w-px bg-slate-200" />
-                <div className="text-center">
-                  <p className="text-xs text-slate-500 mb-1">Total Income</p>
-                  <p className="font-bold text-slate-700">GHS 2,140.00</p>
-                </div>
-              </div>
+      {/* Balance Card */}
+      <div className="px-4 -mt-12 relative z-10">
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+          <div className="p-5">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Balance</p>
+            <p className="text-4xl font-black text-slate-900 mt-1">GHS 4,520.00</p>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Link href="/deposit">
-                  <Button className="w-full h-11 rounded-xl shadow-sm bg-primary hover:bg-primary/90 text-sm font-semibold">
-                    <ArrowDownToLine className="mr-2" size={16} />
-                    Deposit
-                  </Button>
-                </Link>
-                <Link href="/withdraw">
-                  <Button variant="outline" className="w-full h-11 rounded-xl text-primary border-primary/20 hover:bg-primary/5 text-sm font-semibold">
-                    <ArrowUpRight className="mr-2" size={16} />
-                    Withdraw
-                  </Button>
-                </Link>
+            <div className="flex items-center justify-around mt-5 pt-4 border-t border-slate-100">
+              <div className="text-center">
+                <p className="text-[11px] text-slate-500 mb-0.5">Today</p>
+                <p className="text-base font-bold text-emerald-600">+GHS 82</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="w-px h-8 bg-slate-100" />
+              <div className="text-center">
+                <p className="text-[11px] text-slate-500 mb-0.5">Total</p>
+                <p className="text-base font-bold text-primary">GHS 2,140</p>
+              </div>
+              <div className="w-px h-8 bg-slate-100" />
+              <div className="text-center">
+                <p className="text-[11px] text-slate-500 mb-0.5">Active</p>
+                <p className="text-base font-bold text-slate-900">2 Plans</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 border-t border-slate-100">
+            <Link href="/deposit" className="flex items-center justify-center gap-2 py-4 hover:bg-blue-50 transition-colors border-r border-slate-100 group">
+              <ArrowDownToLine size={18} className="text-primary group-hover:scale-110 transition-transform" />
+              <span className="font-bold text-primary text-sm">Deposit</span>
+            </Link>
+            <Link href="/withdraw" className="flex items-center justify-center gap-2 py-4 hover:bg-emerald-50 transition-colors group">
+              <ArrowUpFromLine size={18} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+              <span className="font-bold text-emerald-600 text-sm">Withdraw</span>
+            </Link>
+          </div>
         </div>
+      </div>
 
-        {/* Menu Items */}
-        <div className="px-4 mt-6 space-y-3">
-          {menuItems.map((item, idx) => (
-            <motion.div
-              key={item.label}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-            >
-              <Link href={item.href}>
-                <Card className="border-0 shadow-sm shadow-slate-200/30 rounded-[16px] hover:bg-slate-50 transition-colors">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-primary">
-                        <item.icon size={20} />
-                      </div>
-                      <span className="font-medium text-slate-700">{item.label}</span>
-                    </div>
-                    <ChevronRight size={20} className="text-slate-400" />
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
-
+      {/* Menu */}
+      <div className="px-4 mt-5 space-y-2">
+        {MENU_ITEMS.map((item, idx) => (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: menuItems.length * 0.05 }}
-            className="pt-2"
+            key={item.label}
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: idx * 0.04 }}
           >
-            <Button variant="ghost" className="w-full h-14 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive font-semibold">
-              <LogOut className="mr-2" size={18} />
-              Sign Out
-            </Button>
+            <Link href={item.href}>
+              <div className="bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-4 hover:shadow-md transition-all group active:scale-[0.99]">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${item.color} group-hover:scale-105 transition-transform`}>
+                  <item.icon size={20} />
+                </div>
+                <span className="flex-1 font-semibold text-slate-700 text-sm">{item.label}</span>
+                <ChevronRight size={18} className="text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
+              </div>
+            </Link>
           </motion.div>
-        </div>
+        ))}
+
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
+          <button
+            onClick={() => router.push("/login")}
+            className="w-full bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-4 hover:bg-red-50 hover:border-red-100 transition-all group"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <LogOut size={20} />
+            </div>
+            <span className="flex-1 font-semibold text-red-500 text-sm text-left">Sign Out</span>
+          </button>
+        </motion.div>
       </div>
     </div>
   );

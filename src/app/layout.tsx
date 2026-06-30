@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Investment Platform",
-  description: "Modern VIP Investment Platform",
+  title: "VIP Invest - Premium Investment Platform",
+  description: "Earn daily passive income with VIP investment plans. Invite friends and grow your wealth.",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-slate-50 text-slate-900">
+      <body className="antialiased bg-background text-foreground">
         {children}
       </body>
     </html>
