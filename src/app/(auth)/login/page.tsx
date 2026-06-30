@@ -14,7 +14,12 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => { setLoading(false); router.push("/"); }, 1500);
+    setTimeout(() => {
+      setLoading(false);
+      // Store auth token so dashboard auth guard passes
+      localStorage.setItem("vip_token", "demo_token_user");
+      router.push("/");
+    }, 1500);
   };
 
   return (
