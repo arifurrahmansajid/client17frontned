@@ -1,24 +1,24 @@
 "use client";
 
-import { Wallet, ArrowDownToLine, HeadphonesIcon, Megaphone, ArrowRight, ShieldCheck, Zap } from "lucide-react";
+import { Wallet, ArrowDownToLine, HeadphonesIcon, Megaphone, ArrowRight, ShieldCheck, Zap, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const SLIDES = [
   {
-    image: "https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?q=80&w=800&auto=format&fit=crop",
-    title: "Panasonic Premium Massage Chair",
-    desc: "Experience the most highly developed deep-tissue massage technology in the world."
+    image: "https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=800&auto=format&fit=crop",
+    title: "Premium Panasonic Series",
+    desc: "Invest in the world's leading massage chair technology and start earning."
   },
   {
-    image: "https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=800&auto=format&fit=crop",
-    title: "Relax & Rejuvenate",
-    desc: "Generate daily income effortlessly while enjoying the ultimate relaxation experience."
+    image: "https://images.unsplash.com/photo-1596766487920-56d11a2fdfcf?q=80&w=800&auto=format&fit=crop",
+    title: "Daily Passive Income",
+    desc: "Watch your wealth grow with automated daily returns on your VIP device."
   },
   {
     image: "https://images.unsplash.com/photo-1519415943484-9fa1873496d4?q=80&w=800&auto=format&fit=crop",
-    title: "Smart Investment Platform",
-    desc: "Join thousands of users earning daily returns with our VIP tier system."
+    title: "Global Investment Platform",
+    desc: "Join thousands of smart investors securing their financial future."
   }
 ];
 
@@ -45,7 +45,7 @@ export default function HomePage() {
             }`}
           >
             {/* Reduced Opacity Lighter Gradient Overlay */}
-            <div className="absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-black/70 via-black/10 to-transparent z-20">
+            <div className="absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-20">
               <h2 className="text-white font-black text-xl leading-tight tracking-wide drop-shadow-md">{slide.title}</h2>
               <p className="text-white/95 text-xs mt-2 max-w-[85%] leading-relaxed drop-shadow-md font-medium">{slide.desc}</p>
             </div>
@@ -96,11 +96,33 @@ export default function HomePage() {
 
       {/* Announcement Bar */}
       <div className="bg-white px-4 py-3.5 flex items-center gap-3 mt-4 mx-3 rounded-2xl shadow-sm border border-slate-100">
-        <Megaphone size={18} className="text-[#0047B3] shrink-0" />
+        <Megaphone size={18} className="text-[#0047B3] shrink-0 animate-pulse" />
         <div className="overflow-hidden">
           <p className="text-xs text-slate-700 font-medium leading-relaxed truncate">
             Welcome to the new VIP Platform! Generate daily income effortlessly.
           </p>
+        </div>
+      </div>
+
+      {/* Recent Payouts Section (New Section) */}
+      <div className="mt-5 mx-3 bg-gradient-to-r from-blue-50 to-[#f5f5f5] rounded-2xl p-4 border border-blue-100/50 shadow-sm relative overflow-hidden">
+        <div className="absolute -right-4 -top-4 w-16 h-16 bg-[#0047b3]/5 rounded-full blur-xl"></div>
+        <div className="flex items-center gap-2 mb-3 relative z-10">
+          <TrendingUp size={16} className="text-[#0047B3]" />
+          <h3 className="font-bold text-slate-800 text-xs tracking-wide">Live VIP Withdrawals</h3>
+        </div>
+        <div className="flex flex-col gap-2 relative z-10">
+          {[
+            { phone: "***5421", amount: "GHS 1,450", time: "Just now" },
+            { phone: "***8902", amount: "GHS 320", time: "2 mins ago" },
+            { phone: "***1124", amount: "GHS 5,200", time: "5 mins ago" },
+          ].map((item, i) => (
+            <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-xl shadow-sm border border-slate-50">
+              <span className="text-xs font-bold text-slate-600">{item.phone}</span>
+              <span className="text-xs font-black text-emerald-600">{item.amount}</span>
+              <span className="text-[10px] text-slate-400 font-medium">{item.time}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -131,10 +153,28 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Trust Badges (New Section) */}
+      <div className="mt-5 px-4 py-4 bg-white mx-3 rounded-2xl border border-slate-100 flex items-center justify-around shadow-sm">
+        <div className="flex flex-col items-center gap-1">
+           <span className="text-lg font-black text-[#0047B3]">50K+</span>
+           <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Active Users</span>
+        </div>
+        <div className="w-px h-8 bg-slate-200"></div>
+        <div className="flex flex-col items-center gap-1">
+           <span className="text-lg font-black text-[#0047B3]">24/7</span>
+           <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Support</span>
+        </div>
+        <div className="w-px h-8 bg-slate-200"></div>
+        <div className="flex flex-col items-center gap-1">
+           <span className="text-lg font-black text-[#0047B3]">100%</span>
+           <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Guaranteed</span>
+        </div>
+      </div>
+
       {/* Promotional Graphic */}
       <div className="w-full relative aspect-[16/9] bg-slate-200 mt-5 rounded-3xl overflow-hidden mx-3 shadow-md" style={{ width: 'calc(100% - 24px)' }}>
         <div className="absolute inset-0 flex items-center justify-center z-10 p-6 bg-black/15">
-          <div className="bg-white/95 px-6 py-3.5 shadow-xl rounded-xl flex items-center justify-center text-center backdrop-blur-md">
+          <div className="bg-white/95 px-6 py-3.5 shadow-xl rounded-xl flex items-center justify-center text-center backdrop-blur-md border border-white/50">
             <h2 className="text-lg md:text-xl font-bold text-slate-800 tracking-wider">
               Panasonic GREEN IMP<span className="text-emerald-600">ACT</span>
             </h2>

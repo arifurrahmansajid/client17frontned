@@ -25,7 +25,7 @@ export default function ProductsPage() {
       {/* Top Banner */}
       <div className="w-full relative aspect-[21/9] bg-slate-900 shrink-0 shadow-md">
         <img 
-          src="https://images.unsplash.com/photo-1596766487920-56d11a2fdfcf?q=80&w=800&auto=format&fit=crop" 
+          src="https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=800&auto=format&fit=crop" 
           alt="Devices" 
           className="absolute inset-0 w-full h-full object-cover opacity-80"
         />
