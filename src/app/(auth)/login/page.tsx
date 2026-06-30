@@ -9,17 +9,47 @@ import { motion } from "framer-motion";
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    setError("");
+    
+    try {
+      // Clean phone number and prepend +233 if needed
+      const cleanPhone = phoneNumber.replace(/\s/g, '');
+      const fullPhone = cleanPhone.startsWith('+233') ? cleanPhone : "+233" + cleanPhone;
+
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: fullPhone, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("vip_token", data.token);
+      localStorage.setItem("vip_role", data.user.role);
+      
+      if (data.user.role === 'admin' || data.user.role === 'super_admin') {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
       setLoading(false);
-      // Store auth token so dashboard auth guard passes
-      localStorage.setItem("vip_token", "demo_token_user");
-      router.push("/");
-    }, 1500);
+    }
   };
 
   return (
@@ -44,6 +74,12 @@ export default function LoginPage() {
           <h2 className="text-xl font-bold text-slate-900 mb-1">Welcome back</h2>
           <p className="text-sm text-slate-500 mb-6">Sign in to your account</p>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-semibold text-slate-700 mb-2 block">Phone Number</label>
@@ -52,6 +88,8 @@ export default function LoginPage() {
                   <span className="text-sm font-bold text-slate-600">+233</span>
                 </div>
                 <input type="tel" placeholder="55 123 4567" required
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
                   className="flex-1 h-12 px-4 bg-slate-50 border border-slate-200 rounded-r-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:z-10" />
               </div>
             </div>
@@ -63,6 +101,8 @@ export default function LoginPage() {
               </div>
               <div className="relative">
                 <input type={showPw ? "text" : "password"} placeholder="Enter your password" required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full h-12 pl-4 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                 <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   {showPw ? <EyeOff size={20} /> : <Eye size={20} />}
