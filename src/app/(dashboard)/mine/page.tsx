@@ -1,122 +1,81 @@
 "use client";
 
-import {
-  Wallet, ArrowUpFromLine, ArrowDownToLine, Package, HeadphonesIcon, Info, Settings, LogOut,
-  ChevronRight, User, Shield, Bell, CreditCard, History
-} from "lucide-react";
+import { Wallet, ArrowUpFromLine, ChevronRight, Monitor, CreditCard, HeadphonesIcon, Info, BookOpen } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-
-const MENU_ITEMS = [
-  { icon: CreditCard, label: "Wallet Accounts", href: "/wallet-accounts", color: "bg-blue-50 text-primary" },
-  { icon: Package, label: "My Products", href: "/my-products", color: "bg-indigo-50 text-indigo-600" },
-  { icon: History, label: "Transaction History", href: "/transactions", color: "bg-violet-50 text-violet-600" },
-  { icon: Bell, label: "Notifications", href: "/notifications", color: "bg-amber-50 text-amber-600" },
-  { icon: HeadphonesIcon, label: "Customer Service", href: "/support", color: "bg-emerald-50 text-emerald-600" },
-  { icon: Info, label: "About Platform", href: "/about", color: "bg-slate-100 text-slate-600" },
-  { icon: Shield, label: "Platform Rules", href: "/rules", color: "bg-rose-50 text-rose-600" },
-  { icon: Settings, label: "Settings", href: "/settings", color: "bg-slate-100 text-slate-600" },
-];
 
 export default function MinePage() {
-  const router = useRouter();
+  const phoneNumber = "+233 542114696";
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
-      {/* Profile Header */}
-      <div className="bg-gradient-to-br from-[#0057D9] to-[#1D4ED8] px-4 pt-12 pb-20 relative overflow-hidden">
-        {/* decorative circles */}
-        <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-white/5" />
+    <div className="flex flex-col bg-[#f5f5f5] min-h-full">
+      {/* Top Section */}
+      <div className="bg-[#0047B3] px-4 pt-2 pb-4">
+        
+        {/* User Card */}
+        <div className="bg-gradient-to-b from-black to-[#001a4d] rounded-2xl p-4 shadow-lg flex flex-col items-center">
+          <p className="text-white font-bold text-sm leading-none">{phoneNumber}</p>
+          <p className="text-white/60 text-[10px] mt-1 mb-6">Phone number</p>
 
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="w-18 h-18 relative">
-            <div className="w-[72px] h-[72px] rounded-3xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
-              <User size={32} className="text-white" />
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full border-2 border-white" />
+          <div className="flex w-full justify-around">
+            <Link href="/mine" className="flex flex-col items-center gap-2 text-white">
+              <Wallet size={24} />
+              <span className="text-xs font-medium">Payment</span>
+            </Link>
+            <Link href="/mine" className="flex flex-col items-center gap-2 text-white">
+              <ArrowUpFromLine size={24} />
+              <span className="text-xs font-medium">Withdrawal</span>
+            </Link>
           </div>
-          <div>
-            <h2 className="text-xl font-black text-white">+233 55 *** 1234</h2>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-[11px] font-bold text-white/90 bg-white/20 px-2.5 py-1 rounded-full">VIP 2 Member</span>
-              <span className="text-[11px] text-white/60">ID: 58291</span>
-            </div>
+        </div>
+
+        {/* Balance Cards */}
+        <div className="flex gap-2 mt-2">
+          <div className="flex-1 bg-gradient-to-b from-black to-[#001a4d] rounded-md p-3 shadow-sm border-t border-[#003b99]">
+            <p className="text-white font-bold text-sm leading-none">GHS 30</p>
+            <p className="text-white/70 text-[10px] mt-1.5">Account Balance</p>
+          </div>
+          <div className="flex-1 bg-gradient-to-b from-black to-[#001a4d] rounded-md p-3 shadow-sm border-t border-[#003b99]">
+            <p className="text-white font-bold text-sm leading-none">GHS 0</p>
+            <p className="text-white/70 text-[10px] mt-1.5">Total income</p>
           </div>
         </div>
       </div>
 
-      {/* Balance Card */}
-      <div className="px-4 -mt-12 relative z-10">
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-          <div className="p-5">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Balance</p>
-            <p className="text-4xl font-black text-slate-900 mt-1">GHS 4,520.00</p>
+      {/* Menu List */}
+      <div className="bg-[#f5f5f5] p-3">
+        <div className="bg-[#f0f0f0] rounded-xl overflow-hidden divide-y divide-slate-200/60 shadow-sm border border-slate-200/50">
+          
+          <Link href="/products" className="flex items-center px-4 py-4 hover:bg-white transition-colors">
+            <Monitor size={18} className="text-amber-500 mr-4 shrink-0" />
+            <span className="text-xs font-medium text-slate-800 flex-1">My device</span>
+            <ChevronRight size={16} className="text-slate-400" />
+          </Link>
 
-            <div className="flex items-center justify-around mt-5 pt-4 border-t border-slate-100">
-              <div className="text-center">
-                <p className="text-[11px] text-slate-500 mb-0.5">Today</p>
-                <p className="text-base font-bold text-emerald-600">+GHS 82</p>
-              </div>
-              <div className="w-px h-8 bg-slate-100" />
-              <div className="text-center">
-                <p className="text-[11px] text-slate-500 mb-0.5">Total</p>
-                <p className="text-base font-bold text-primary">GHS 2,140</p>
-              </div>
-              <div className="w-px h-8 bg-slate-100" />
-              <div className="text-center">
-                <p className="text-[11px] text-slate-500 mb-0.5">Active</p>
-                <p className="text-base font-bold text-slate-900">2 Plans</p>
-              </div>
-            </div>
-          </div>
+          <Link href="/wallet-accounts" className="flex items-center px-4 py-4 hover:bg-white transition-colors">
+            <CreditCard size={18} className="text-[#0047B3] mr-4 shrink-0" />
+            <span className="text-xs font-medium text-slate-800 flex-1">Wallet Account Management</span>
+            <ChevronRight size={16} className="text-slate-400" />
+          </Link>
 
-          <div className="grid grid-cols-2 border-t border-slate-100">
-            <Link href="/deposit" className="flex items-center justify-center gap-2 py-4 hover:bg-blue-50 transition-colors border-r border-slate-100 group">
-              <ArrowDownToLine size={18} className="text-primary group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-primary text-sm">Deposit</span>
-            </Link>
-            <Link href="/withdraw" className="flex items-center justify-center gap-2 py-4 hover:bg-emerald-50 transition-colors group">
-              <ArrowUpFromLine size={18} className="text-emerald-600 group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-emerald-600 text-sm">Withdraw</span>
-            </Link>
-          </div>
+          <Link href="/support" className="flex items-center px-4 py-4 hover:bg-white transition-colors">
+            <HeadphonesIcon size={18} className="text-[#0047B3] mr-4 shrink-0" />
+            <span className="text-xs font-medium text-slate-800 flex-1">Customer Service</span>
+            <ChevronRight size={16} className="text-slate-400" />
+          </Link>
+
+          <Link href="/about" className="flex items-center px-4 py-4 hover:bg-white transition-colors">
+            <Info size={18} className="text-[#0047B3] mr-4 shrink-0" />
+            <span className="text-xs font-medium text-slate-800 flex-1">About Us</span>
+            <ChevronRight size={16} className="text-slate-400" />
+          </Link>
+
+          <Link href="/rules" className="flex items-center px-4 py-4 hover:bg-white transition-colors">
+            <BookOpen size={18} className="text-[#0047B3] mr-4 shrink-0" />
+            <span className="text-xs font-medium text-slate-800 flex-1">Platform rules</span>
+            <ChevronRight size={16} className="text-slate-400" />
+          </Link>
+
         </div>
-      </div>
-
-      {/* Menu */}
-      <div className="px-4 mt-5 space-y-2">
-        {MENU_ITEMS.map((item, idx) => (
-          <motion.div
-            key={item.label}
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.04 }}
-          >
-            <Link href={item.href}>
-              <div className="bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-4 hover:shadow-md transition-all group active:scale-[0.99]">
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${item.color} group-hover:scale-105 transition-transform`}>
-                  <item.icon size={20} />
-                </div>
-                <span className="flex-1 font-semibold text-slate-700 text-sm">{item.label}</span>
-                <ChevronRight size={18} className="text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </Link>
-          </motion.div>
-        ))}
-
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
-          <button
-            onClick={() => router.push("/login")}
-            className="w-full bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-4 hover:bg-red-50 hover:border-red-100 transition-all group"
-          >
-            <div className="w-10 h-10 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <LogOut size={20} />
-            </div>
-            <span className="flex-1 font-semibold text-red-500 text-sm text-left">Sign Out</span>
-          </button>
-        </motion.div>
       </div>
     </div>
   );
