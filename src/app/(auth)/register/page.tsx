@@ -64,14 +64,12 @@ export default function RegisterPage() {
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-7">
-          <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-primary/25">
-            <TrendingUp size={30} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-black text-slate-900">Create Account</h1>
-          <p className="text-sm text-slate-500 mt-1">Join VIP Invest and start earning</p>
+          <h1 className="text-3xl font-black text-slate-900 uppercase tracking-widest">PAISON VIP</h1>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-1">Create Account</h2>
+          <p className="text-sm text-slate-500 mb-6">Join us and start earning</p>
           {error && (
             <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center">
               {error}

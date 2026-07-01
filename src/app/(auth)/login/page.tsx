@@ -62,11 +62,7 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-violet-500/30">
-            <TrendingUp size={30} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-black text-indigo-900">VIP Invest</h1>
-          <p className="text-sm text-slate-500 mt-1">Your premium investment platform</p>
+          <h1 className="text-3xl font-black text-indigo-900 uppercase tracking-widest">PAISON VIP</h1>
         </div>
 
         {/* Card */}
