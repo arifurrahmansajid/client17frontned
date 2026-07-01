@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: "Earn daily passive income with VIP investment plans. Invite friends and grow your wealth.",
 };
 
+import { Toaster } from 'sonner';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -15,6 +17,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased bg-background text-foreground" suppressHydrationWarning>
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

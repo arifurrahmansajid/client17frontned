@@ -53,7 +53,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-violet-50 to-purple-50 flex flex-col items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -62,15 +62,15 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-primary/25">
+          <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-violet-500/30">
             <TrendingUp size={30} className="text-white" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900">VIP Invest</h1>
+          <h1 className="text-2xl font-black text-indigo-900">VIP Invest</h1>
           <p className="text-sm text-slate-500 mt-1">Your premium investment platform</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6">
+        <div className="bg-white rounded-3xl shadow-xl shadow-violet-200/40 border border-violet-100 p-6">
           <h2 className="text-xl font-bold text-slate-900 mb-1">Welcome back</h2>
           <p className="text-sm text-slate-500 mb-6">Sign in to your account</p>
 
@@ -84,13 +84,13 @@ export default function LoginPage() {
             <div>
               <label className="text-sm font-semibold text-slate-700 mb-2 block">Phone Number</label>
               <div className="flex">
-                <div className="flex items-center bg-slate-100 border border-r-0 border-slate-200 rounded-l-2xl px-3 shrink-0">
-                  <span className="text-sm font-bold text-slate-600">+233</span>
+                <div className="flex items-center bg-violet-50 border border-r-0 border-violet-200 rounded-l-2xl px-3 shrink-0">
+                  <span className="text-sm font-bold text-indigo-700">+233</span>
                 </div>
                 <input type="tel" placeholder="55 123 4567" required
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="flex-1 h-12 px-4 bg-slate-50 border border-slate-200 rounded-r-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:z-10" />
+                  className="flex-1 h-12 px-4 bg-violet-50/50 border border-violet-200 rounded-r-2xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:z-10" />
               </div>
             </div>
 
@@ -103,7 +103,7 @@ export default function LoginPage() {
                 <input type={showPw ? "text" : "password"} placeholder="Enter your password" required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-12 pl-4 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                  className="w-full h-12 pl-4 pr-12 bg-violet-50/50 border border-violet-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   {showPw ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -111,7 +111,7 @@ export default function LoginPage() {
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full h-12 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
+              className="w-full h-12 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-2xl shadow-lg shadow-violet-500/30 hover:from-indigo-700 hover:to-violet-700 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (

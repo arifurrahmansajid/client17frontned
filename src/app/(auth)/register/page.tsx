@@ -10,13 +10,53 @@ export default function RegisterPage() {
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => { setLoading(false); router.push("/login"); }, 1500);
+
+    try {
+      // Clean phone number and prepend +233 if needed
+      const cleanPhone = phoneNumber.replace(/\s/g, '');
+      const fullPhone = cleanPhone.startsWith('+233') ? cleanPhone : "+233" + cleanPhone;
+
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          phoneNumber: fullPhone, 
+          password 
+          // Note: inviteCode could be passed here if the backend model supported it
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Registration failed");
+        setLoading(false);
+        return;
+      }
+
+      // Automatically redirect to login page after successful registration
+      router.push("/login");
+    } catch (err) {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,6 +72,11 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-semibold text-slate-700 mb-2 block">Phone Number</label>
@@ -40,6 +85,8 @@ export default function RegisterPage() {
                   <span className="text-sm font-bold text-slate-600">+233</span>
                 </div>
                 <input type="tel" placeholder="55 123 4567" required
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
                   className="flex-1 h-12 px-4 bg-slate-50 border border-slate-200 rounded-r-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
@@ -48,6 +95,8 @@ export default function RegisterPage() {
               <label className="text-sm font-semibold text-slate-700 mb-2 block">Password</label>
               <div className="relative">
                 <input type={showPw ? "text" : "password"} placeholder="Create a password" required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full h-12 pl-4 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                 <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                   {showPw ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -59,6 +108,8 @@ export default function RegisterPage() {
               <label className="text-sm font-semibold text-slate-700 mb-2 block">Confirm Password</label>
               <div className="relative">
                 <input type={showPw2 ? "text" : "password"} placeholder="Confirm your password" required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full h-12 pl-4 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                 <button type="button" onClick={() => setShowPw2(!showPw2)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                   {showPw2 ? <EyeOff size={20} /> : <Eye size={20} />}

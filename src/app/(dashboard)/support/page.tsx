@@ -1,101 +1,146 @@
 "use client";
 
-import { ArrowLeft, MessageCircle, Send, Phone, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Info, ChevronRight, Clock, Shield, HeadphonesIcon, MessageSquare, Send, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
-const FAQS = [
-  { q: "How do I start earning?", a: "Purchase a VIP plan and income starts 24 hours after your purchase. Income is automatically credited to your wallet daily." },
-  { q: "When can I withdraw?", a: "You can withdraw anytime. Minimum withdrawal is GHS 30. You can withdraw up to 3 times per day. A 15% tax is deducted." },
-  { q: "How does the referral system work?", a: "Share your referral code. When someone registers and invests using your code, you earn 20% of their investment as commission (Level 1). Level 2 earns 3%, Level 3 earns 2%." },
-  { q: "Is my investment safe?", a: "Yes. Your investment is secured by the platform. VIP plans are backed by physical massage chair assets generating real revenue." },
-  { q: "How do I deposit funds?", a: "Go to the Deposit page, select your payment method (Bank Transfer, Mobile Money, or Crypto), send the funds, upload the payment screenshot, and submit." },
-];
+import Link from "next/link";
 
 export default function SupportPage() {
   const router = useRouter();
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [ticket, setTicket] = useState({ subject: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => { setSubmitted(false); setTicket({ subject: "", message: "" }); }, 3000);
-  };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-10">
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-100">
-        <div className="flex items-center gap-3 px-4 h-14">
-          <button onClick={() => router.back()} className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center">
-            <ArrowLeft size={20} className="text-slate-700" />
-          </button>
-          <h1 className="text-lg font-bold text-slate-900">Customer Support</h1>
+    <div className="min-h-screen bg-[#f0f4ff] pb-20">
+
+      {/* Clean Intro Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-violet-800 to-purple-900 pt-8 pb-16 px-5 rounded-b-[32px] shadow-lg mb-8">
+        {/* Decorative circles */}
+        <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/5 -mr-10 -mt-10" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full bg-indigo-400/10 -ml-10 -mb-10" />
+
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center shadow-lg mb-4">
+            <HeadphonesIcon size={28} className="text-white" />
+          </div>
+          <h2 className="text-xl font-black text-white mb-1">How can we help?</h2>
+          <p className="text-indigo-200 text-sm font-medium mb-5">Our support team is always ready to assist you.</p>
+
+          {/* Online Hours Badge */}
+          <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 shadow-inner">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+            <Clock size={13} className="text-indigo-200" />
+            <span className="text-white text-xs font-semibold">Online Hours: 9:00 &ndash; 17:00</span>
+          </div>
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-4">
-        {/* Contact Buttons */}
-        <div className="grid grid-cols-3 gap-3">
+      {/* Cards overlap */}
+      <div className="px-4 -mt-14 space-y-4 relative z-20">
+
+        {/* Deposit Problem Alert Card */}
+        <Link href="/support/deposit-problem" className="block">
+          <div className="bg-white rounded-3xl shadow-xl shadow-indigo-100 border border-indigo-50 p-5 flex items-start gap-4 active:scale-[0.98] transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md shadow-orange-200">
+              <Info size={22} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-800 mb-1">Deposit Problem?</p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                If your deposit hasn&apos;t been credited, submit your information and we&apos;ll process it within 24 hours.
+              </p>
+            </div>
+            <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 self-center">
+              <ChevronRight size={16} className="text-slate-500" />
+            </div>
+          </div>
+        </Link>
+
+        {/* Contact Us Section */}
+        <div className="bg-white rounded-3xl shadow-lg shadow-slate-100 border border-slate-100 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-50">
+            <div className="flex items-center gap-2">
+              <MessageSquare size={16} className="text-indigo-500" />
+              <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Contact Us</h2>
+            </div>
+          </div>
+
           {[
-            { icon: MessageCircle, label: "Live Chat", color: "bg-primary text-white", href: "#" },
-            { icon: Send, label: "Telegram", color: "bg-sky-500 text-white", href: "https://t.me/vipinvest" },
-            { icon: Phone, label: "WhatsApp", color: "bg-emerald-500 text-white", href: "https://wa.me/233551234567" },
-          ].map((c) => (
-            <a key={c.label} href={c.href} target="_blank" rel="noopener noreferrer">
-              <div className={`${c.color} rounded-2xl p-4 flex flex-col items-center gap-2.5 shadow-md hover:shadow-lg transition-shadow hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
-                <c.icon size={22} />
-                <span className="text-xs font-bold">{c.label}</span>
+            {
+              label: "Telegram",
+              sub: "Chat with our support team",
+              href: "https://t.me/vipinvest",
+              icon: Send,
+              bg: "from-[#0088cc] to-[#00a3e0]",
+            },
+            {
+              label: "Telegram Channel",
+              sub: "Get official announcements",
+              href: "https://t.me/vipinvest_channel",
+              icon: MessageSquare,
+              bg: "from-[#0088cc] to-[#229ED9]",
+            },
+            {
+              label: "Telegram Group",
+              sub: "Join our community",
+              href: "https://t.me/vipinvest_group",
+              icon: Users,
+              bg: "from-[#229ED9] to-[#0088cc]",
+            },
+          ].map((item, i) => (
+            <a
+              key={i}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-4 px-5 py-4 border-b border-slate-50 last:border-0 active:bg-slate-50 transition-colors"
+            >
+              <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${item.bg} flex items-center justify-center shadow-sm shrink-0`}>
+                <item.icon size={20} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-800">{item.label}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{item.sub}</p>
+              </div>
+              <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                <ChevronRight size={16} className="text-slate-400" />
               </div>
             </a>
           ))}
         </div>
 
-        {/* Support Ticket Form */}
-        <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm">
-          <h3 className="font-bold text-slate-900 mb-4">Submit a Ticket</h3>
-          {submitted ? (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-              className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center">
-              <p className="text-emerald-700 font-semibold">✅ Ticket submitted! We'll respond within 24 hours.</p>
-            </motion.div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input value={ticket.subject} onChange={(e) => setTicket({ ...ticket, subject: e.target.value })} placeholder="Subject" required
-                className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-              <textarea value={ticket.message} onChange={(e) => setTicket({ ...ticket, message: e.target.value })} placeholder="Describe your issue..." required rows={4}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
-              <button type="submit" className="w-full h-12 bg-primary text-white font-bold rounded-2xl shadow-md shadow-primary/20 hover:bg-blue-700 transition-colors">
-                Send Ticket
-              </button>
-            </form>
-          )}
+        {/* Trust / Security Banner */}
+        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-3xl p-5 flex items-center gap-4 shadow-lg shadow-indigo-200">
+          <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+            <Shield size={24} className="text-white" />
+          </div>
+          <div>
+            <p className="text-white font-bold text-sm">Secure &amp; Confidential</p>
+            <p className="text-indigo-200 text-xs mt-0.5 leading-relaxed">
+              All conversations are encrypted and your data is always protected.
+            </p>
+          </div>
         </div>
 
-        {/* FAQ */}
-        <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm">
-          <h3 className="font-bold text-slate-900 mb-4">FAQ</h3>
-          <div className="space-y-2">
-            {FAQS.map((faq, i) => (
-              <div key={i} className="border border-slate-100 rounded-2xl overflow-hidden">
-                <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors">
-                  <span className="text-sm font-semibold text-slate-900 pr-4">{faq.q}</span>
-                  {openFaq === i ? <ChevronUp size={18} className="text-primary shrink-0" /> : <ChevronDown size={18} className="text-slate-400 shrink-0" />}
-                </button>
-                <AnimatePresence>
-                  {openFaq === i && (
-                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
-                      <p className="text-sm text-slate-600 px-4 pb-4 leading-relaxed">{faq.a}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+        {/* Important Notes */}
+        <div className="bg-white rounded-3xl shadow-lg shadow-slate-100 border border-slate-100 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-50">
+            <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Important Notes</h2>
+          </div>
+          <div className="p-5 space-y-4">
+            {[
+              "If you cannot open the official Telegram app above, please try using another browser.",
+              "If you have any questions about our platform, contact our online customer service. They will answer all your questions. Response time may be a bit long, so please be patient.",
+              "If our customer service does not reply immediately, please wait patiently. We are receiving many messages and will respond as soon as possible. Thank you for your understanding!",
+              "Want to make more money? Join our official Telegram channel for the latest updates!",
+            ].map((note, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-xs font-black text-indigo-600">{i + 1}</span>
+                </div>
+                <p className="text-[13px] text-slate-600 leading-relaxed">{note}</p>
               </div>
             ))}
           </div>
         </div>
+
       </div>
     </div>
   );

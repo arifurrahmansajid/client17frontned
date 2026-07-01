@@ -8,19 +8,19 @@ const slides = [
     id: 1,
     title: "Premium VIP Packages",
     description: "Earn passive income every day",
-    color: "from-blue-600 to-primary",
+    color: "from-indigo-700 to-violet-600",
   },
   {
     id: 2,
     title: "Invite Friends & Earn",
     description: "Up to 20% commission on referrals",
-    color: "from-indigo-500 to-purple-600",
+    color: "from-violet-600 to-purple-700",
   },
   {
     id: 3,
     title: "Secure & Fast Withdrawals",
     description: "Get your money in seconds",
-    color: "from-emerald-500 to-teal-600",
+    color: "from-blue-700 to-indigo-700",
   },
 ];
 
