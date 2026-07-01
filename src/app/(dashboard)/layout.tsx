@@ -27,6 +27,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       case '/withdraw': return { title: 'WITHDRAW', showBack: true };
       case '/support': return { title: 'CUSTOMER SERVICE', showBack: true };
       case '/support/deposit-problem': return { title: 'DEPOSIT PROBLEM', showBack: true };
+      case '/team-details': return { title: 'MY TEAM', showBack: true };
       case '/wallet-accounts': return { title: 'PAISON VIP', showBack: false };
       case '/products': return { title: 'PAISON VIP', showBack: false };
       case '/mine': return { title: 'PAISON VIP', showBack: false };

@@ -20,7 +20,7 @@ export default function WalletAccountsPage() {
   const router = useRouter();
   const [wallets, setWallets] = useState(INITIAL_WALLETS);
   const [showAdd, setShowAdd] = useState(false);
-  const [walletType, setWalletType] = useState("momo");
+  const [walletType, setWalletType] = useState("");
   const [walletNumber, setWalletNumber] = useState("");
   const [walletLabel, setWalletLabel] = useState("");
 
@@ -114,40 +114,62 @@ export default function WalletAccountsPage() {
       <AnimatePresence>
         {showAdd && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center"
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={(e) => e.target === e.currentTarget && setShowAdd(false)}>
             <motion.div
-              initial={{ y: 200 }} animate={{ y: 0 }} exit={{ y: 200 }}
-              transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="w-full max-w-[430px] bg-white rounded-t-3xl p-6 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-[400px] bg-white rounded-3xl p-6 shadow-2xl"
             >
               <h3 className="text-xl font-bold text-slate-900 mb-5">Add Wallet</h3>
               <form onSubmit={handleAdd} className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Wallet Type</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {WALLET_TYPES.map((t) => (
-                      <button key={t.id} type="button" onClick={() => setWalletType(t.id)}
-                        className={`py-2.5 rounded-2xl border-2 text-xs font-bold flex flex-col items-center gap-1.5 transition-all ${walletType === t.id ? "border-primary bg-blue-50 text-primary" : "border-slate-200 text-slate-500"}`}>
-                        <t.icon size={18} />
-                        {t.label}
-                      </button>
-                    ))}
+                  <label className="text-[13px] font-medium text-black mb-1.5 block">*Select the operator channel</label>
+                  <div className="relative">
+                    <select
+                      value={walletType}
+                      onChange={(e) => setWalletType(e.target.value)}
+                      required
+                      className="w-full h-10 px-3 bg-[#D9D9D9] border-none rounded text-[13px] text-slate-600 focus:outline-none appearance-none"
+                    >
+                      <option value="" disabled>Please select</option>
+                      {WALLET_TYPES.map(t => (
+                        <option key={t.id} value={t.id}>{t.label}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1L5 5L9 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
                   </div>
                 </div>
+
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Account Label</label>
-                  <input value={walletLabel} onChange={(e) => setWalletLabel(e.target.value)} placeholder="e.g. MTN Mobile Money" required
-                    className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <label className="text-[13px] font-medium text-black mb-1.5 block">*Name</label>
+                  <input 
+                    value={walletLabel} 
+                    onChange={(e) => setWalletLabel(e.target.value)} 
+                    placeholder="Moses Muomaalah" 
+                    required
+                    className="w-full h-10 px-3 bg-[#D9D9D9] border-none rounded text-[13px] text-slate-800 placeholder:text-slate-500 focus:outline-none" 
+                  />
                 </div>
+
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Account Number / Phone</label>
-                  <input value={walletNumber} onChange={(e) => setWalletNumber(e.target.value)} placeholder="e.g. +233 55 123 4567" required
-                    className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <label className="text-[13px] font-medium text-black mb-1.5 block">*Wallet account</label>
+                  <input 
+                    value={walletNumber} 
+                    onChange={(e) => setWalletNumber(e.target.value)} 
+                    placeholder="Please enter the wallet account" 
+                    required
+                    className="w-full h-10 px-3 bg-[#D9D9D9] border-none rounded text-[13px] text-slate-800 placeholder:text-slate-500 focus:outline-none" 
+                  />
                 </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowAdd(false)} className="flex-1 h-12 border-2 border-slate-200 text-slate-700 font-semibold rounded-2xl">Cancel</button>
-                  <button type="submit" className="flex-1 h-12 bg-primary text-white font-bold rounded-2xl shadow-md shadow-primary/20">Add Wallet</button>
+
+                <div className="flex gap-3 pt-4">
+                  <button type="button" onClick={() => setShowAdd(false)} className="flex-1 h-11 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl text-sm">Cancel</button>
+                  <button type="submit" className="flex-1 h-11 bg-primary text-white font-bold rounded-xl shadow-md shadow-primary/20 text-sm">Submit</button>
                 </div>
               </form>
             </motion.div>
