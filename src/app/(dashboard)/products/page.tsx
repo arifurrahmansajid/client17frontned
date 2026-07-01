@@ -11,7 +11,7 @@ export default function ProductsPage() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    fetch("https://client17backend-ftz2.vercel.app/api/products")
+    fetch("http://localhost:5000/api/products")
       .then(res => res.json())
       .then(data => {
         if (data.success) setProducts(data.products);
