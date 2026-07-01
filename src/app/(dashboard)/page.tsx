@@ -111,9 +111,9 @@ export default function HomePage() {
         <Megaphone size={18} className="text-violet-600 shrink-0 animate-pulse" />
         <div className="overflow-hidden flex-1 relative h-4">
           <motion.div
-            initial={{ x: "100%" }}
+            initial={{ x: 400 }}
             animate={{ x: "-100%" }}
-            transition={{ repeat: Infinity, duration: 100, ease: "linear" }}
+            transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
             className="absolute whitespace-nowrap text-xs text-slate-700 font-medium"
           >
             🎉 Welcome to PAISON VIP Official Investment Hub! 🚀 Signup Bonus $10 USDT TRC20 credited instantly! 💰 Member ***842 just withdrew 1,250 USDT successfully! 🔥 Level 1 referral rewards increased to 10%!
