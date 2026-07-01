@@ -11,7 +11,7 @@ export default function ProductsPage() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/products")
+    fetch("https://client17backend-pkr5.vercel.app/api/products")
       .then(res => res.json())
       .then(data => {
         if (data.success) setProducts(data.products);
