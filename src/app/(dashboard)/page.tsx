@@ -3,7 +3,7 @@
 import { Wallet, ArrowDownToLine, HeadphonesIcon, Megaphone, ArrowRight, ShieldCheck, Zap, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 const SLIDES = [
   {
     image: "/Gemini_Generated_Image_u3l7yeu3l7yeu3l7 (1).png",
@@ -24,12 +24,20 @@ const SLIDES = [
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 4000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const popupTimer = setTimeout(() => {
+      setShowPopup(true);
+    }, 2000);
+    return () => clearTimeout(popupTimer);
   }, []);
 
   return (
@@ -245,6 +253,41 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* Platform Notification Popup */}
+      <AnimatePresence>
+        {showPopup && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-[400px] bg-white rounded-[28px] p-5 shadow-2xl flex flex-col max-h-[75vh]"
+            >
+              <h3 className="text-[17px] font-bold text-slate-900 mb-4 px-1">Platform notification</h3>
+              
+              <div className="flex-1 overflow-y-auto pr-3 space-y-4 mb-4 text-[13px] text-slate-700 font-medium leading-[1.6]">
+                <p>✨ Welcome to the Panasonic massage chair online store. ✨</p>
+                <p>✔️ The most trusted wealth management and investment app!</p>
+                <p>➤ Register as a new user and receive a 30 Ghana Cedis bonus.</p>
+                <p>➤ Earn a 10% rebate on the product value with your first purchase.</p>
+                <p>➤ Earn commissions of 20%, 3%, and 2% by inviting friends to join.</p>
+              </div>
+
+              <div className="flex flex-col gap-2.5 mt-2">
+                <Link href="#" className="w-full py-3.5 bg-gradient-to-r from-blue-700 to-blue-600 rounded-full flex items-center justify-center gap-2 text-white font-bold text-sm shadow-md">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.19-.08-.05-.19-.02-.27 0-.11.03-1.87 1.18-5.27 3.45-.5.34-.95.5-1.35.49-.44-.01-1.29-.25-1.92-.46-.77-.25-1.38-.39-1.33-.82.03-.22.34-.44.93-.66 3.64-1.58 6.07-2.63 7.29-3.13 3.47-1.42 4.19-1.67 4.66-1.68.1 0 .32.02.44.13.1.09.13.22.14.31-.01.03-.01.12-.01.14z"/></svg>
+                  Telegram Channel
+                </Link>
+                <button onClick={() => setShowPopup(false)} className="w-full py-3.5 bg-gradient-to-r from-blue-800 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                  OK
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
