@@ -20,7 +20,7 @@ export default function MinePage() {
         const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
         if (!token) return;
 
-        const res = await fetch("http://localhost:5000/api/user/me", {
+        const res = await fetch("https://client17backend-ftz2.vercel.app/api/user/me", {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -80,7 +80,7 @@ export default function MinePage() {
             return;
           }
 
-          const res = await fetch("http://localhost:5000/api/user/avatar", {
+          const res = await fetch("https://client17backend-ftz2.vercel.app/api/user/avatar", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",

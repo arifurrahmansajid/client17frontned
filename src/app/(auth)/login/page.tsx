@@ -24,7 +24,7 @@ export default function LoginPage() {
       const cleanPhone = phoneNumber.replace(/\s/g, '');
       const fullPhone = cleanPhone.startsWith('+233') ? cleanPhone : "+233" + cleanPhone;
 
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("https://client17backend-ftz2.vercel.app/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phoneNumber: fullPhone, password })
