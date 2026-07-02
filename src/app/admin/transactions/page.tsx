@@ -1,20 +1,61 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Eye, CheckCircle, XCircle, Clock, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Eye, CheckCircle, XCircle, Clock, ArrowUpRight, ArrowDownLeft, Shield } from "lucide-react";
 import { motion } from "framer-motion";
-
-const TRANSACTIONS = [
-  { id: "TRX-9382", user: "+233 55 123 4567", type: "deposit", amount: 1500, date: "2026-06-30 14:30", status: "completed" },
-  { id: "TRX-7412", user: "+233 24 456 7890", type: "withdrawal", amount: 450, date: "2026-06-30 11:15", status: "pending" },
-  { id: "TRX-1029", user: "+233 50 987 6543", type: "investment", amount: 5000, date: "2026-06-29 09:40", status: "completed" },
-  { id: "TRX-4431", user: "+233 27 321 9876", type: "deposit", amount: 200, date: "2026-06-28 16:20", status: "failed" },
-  { id: "TRX-9982", user: "+233 20 654 3210", type: "withdrawal", amount: 1200, date: "2026-06-27 10:05", status: "completed" },
-];
+import { API_URL } from "@/lib/api";
 
 export default function AdminTransactionsPage() {
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const filtered = TRANSACTIONS.filter(t => t.id.includes(search) || t.user.includes(search));
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const token = localStorage.getItem("vip_token");
+        if (!token) return;
+
+        const res = await fetch(`${API_URL}/api/user/transactions`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setTransactions(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch transactions:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  const formattedTransactions = transactions.map(item => ({
+    id: item._id,
+    user: item.userPhone || "",
+    type: item.type === "withdraw" ? "withdrawal" : item.type === "purchase" ? "investment" : item.type,
+    amount: Math.abs(item.amount),
+    date: item.createdAt ? new Date(item.createdAt).toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : "",
+    status: item.status || "completed"
+  }));
+
+  const filtered = formattedTransactions.filter(t => 
+    t.id.toLowerCase().includes(search.toLowerCase()) || 
+    t.user.toLowerCase().includes(search.toLowerCase()) ||
+    t.type.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-5">
@@ -28,7 +69,7 @@ export default function AdminTransactionsPage() {
       {/* Search */}
       <div className="relative">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Transaction ID or Phone..."
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Transaction ID, Phone, or Type..."
           className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" />
       </div>
 
@@ -48,37 +89,53 @@ export default function AdminTransactionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map((trx, idx) => (
-                <motion.tr key={trx.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.04 }}
-                  className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3.5 font-bold text-slate-900">{trx.id}</td>
-                  <td className="px-4 py-3.5 font-medium text-slate-700">{trx.user}</td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      {trx.type === "deposit" && <ArrowDownLeft size={14} className="text-emerald-500" />}
-                      {trx.type === "withdrawal" && <ArrowUpRight size={14} className="text-red-500" />}
-                      {trx.type === "investment" && <CheckCircle size={14} className="text-primary" />}
-                      <span className="capitalize font-semibold text-slate-700">{trx.type}</span>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-sm text-slate-400">
+                    <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-2" />
+                    Loading transactions...
                   </td>
-                  <td className="px-4 py-3.5 font-black text-slate-900">GHS {trx.amount.toLocaleString()}</td>
-                  <td className="px-4 py-3.5 text-slate-500 text-xs font-medium">{trx.date}</td>
-                  <td className="px-4 py-3.5">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-lg inline-flex items-center gap-1 ${
-                      trx.status === "completed" ? "bg-emerald-100 text-emerald-700" :
-                      trx.status === "pending" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-600"
-                    }`}>
-                      {trx.status === "completed" ? <CheckCircle size={11} /> : trx.status === "pending" ? <Clock size={11} /> : <XCircle size={11} />}
-                      <span className="capitalize">{trx.status}</span>
-                    </span>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-sm text-slate-400">
+                    No transactions found
                   </td>
-                  <td className="px-4 py-3.5">
-                    <button className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-                      <Eye size={14} />
-                    </button>
-                  </td>
-                </motion.tr>
-              ))}
+                </tr>
+              ) : (
+                filtered.map((trx, idx) => (
+                  <motion.tr key={trx.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.04 }}
+                    className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3.5 font-bold text-slate-900 truncate max-w-[120px]">{trx.id}</td>
+                    <td className="px-4 py-3.5 font-medium text-slate-700">{trx.user}</td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        {trx.type === "deposit" && <ArrowDownLeft size={14} className="text-emerald-500" />}
+                        {trx.type === "withdrawal" && <ArrowUpRight size={14} className="text-red-500" />}
+                        {trx.type === "income" && <ArrowDownLeft size={14} className="text-violet-500" />}
+                        {trx.type === "investment" && <CheckCircle size={14} className="text-primary" />}
+                        <span className="capitalize font-semibold text-slate-700">{trx.type}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5 font-black text-slate-900">GHS {trx.amount.toLocaleString()}</td>
+                    <td className="px-4 py-3.5 text-slate-500 text-xs font-medium">{trx.date}</td>
+                    <td className="px-4 py-3.5">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-lg inline-flex items-center gap-1 ${
+                        trx.status === "completed" || trx.status === "approved" ? "bg-emerald-100 text-emerald-700" :
+                        trx.status === "pending" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-600"
+                      }`}>
+                        {trx.status === "completed" || trx.status === "approved" ? <CheckCircle size={11} /> : trx.status === "pending" ? <Clock size={11} /> : <XCircle size={11} />}
+                        <span className="capitalize">{trx.status}</span>
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <button className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                        <Eye size={14} />
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
