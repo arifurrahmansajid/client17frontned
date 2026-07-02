@@ -1,24 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Users, ArrowDownToLine, ArrowUpFromLine, TrendingUp, Package, DollarSign, Activity, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-
-const STATS = [
-  { label: "Total Users", value: "1,284", change: "+12%", icon: Users, color: "bg-blue-50 text-primary", trend: "up" },
-  { label: "Total Deposits", value: "GHS 284,500", change: "+8%", icon: ArrowDownToLine, color: "bg-emerald-50 text-emerald-600", trend: "up" },
-  { label: "Withdrawals", value: "GHS 142,300", change: "+5%", icon: ArrowUpFromLine, color: "bg-rose-50 text-rose-500", trend: "up" },
-  { label: "Daily Income", value: "GHS 18,920", change: "+22%", icon: TrendingUp, color: "bg-violet-50 text-violet-600", trend: "up" },
-  { label: "Active Plans", value: "2,840", change: "+18%", icon: Package, color: "bg-amber-50 text-amber-600", trend: "up" },
-  { label: "Net Revenue", value: "GHS 47,200", change: "+15%", icon: DollarSign, color: "bg-indigo-50 text-indigo-600", trend: "up" },
-];
-
-const RECENT_USERS = [
-  { id: 1, phone: "+233 55 *** 1234", joined: "2026-06-30", plan: "VIP 2", status: "active" },
-  { id: 2, phone: "+233 50 *** 5678", joined: "2026-06-29", plan: "VIP 4", status: "active" },
-  { id: 3, phone: "+233 24 *** 9012", joined: "2026-06-29", plan: "VIP 1", status: "pending" },
-  { id: 4, phone: "+233 27 *** 3456", joined: "2026-06-28", plan: "VIP 3", status: "active" },
-];
+import { API_URL } from "@/lib/api";
 
 const RECENT_TRANSACTIONS = [
   { id: 1, user: "+233 55 *** 1234", type: "deposit", amount: 500, date: "2026-06-30", status: "approved" },
@@ -28,6 +14,60 @@ const RECENT_TRANSACTIONS = [
 ];
 
 export default function AdminDashboard() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("vip_token");
+        if (!token) return;
+
+        const res = await fetch(`${API_URL}/api/user/all`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUsers(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const totalUsersCount = users.length;
+
+  const stats = [
+    { label: "Total Users", value: loading ? "..." : totalUsersCount.toLocaleString(), change: "+100%", icon: Users, color: "bg-blue-50 text-primary", trend: "up" },
+    { label: "Total Deposits", value: "GHS 284,500", change: "+8%", icon: ArrowDownToLine, color: "bg-emerald-50 text-emerald-600", trend: "up" },
+    { label: "Withdrawals", value: "GHS 142,300", change: "+5%", icon: ArrowUpFromLine, color: "bg-rose-50 text-rose-500", trend: "up" },
+    { label: "Daily Income", value: "GHS 18,920", change: "+22%", icon: TrendingUp, color: "bg-violet-50 text-violet-600", trend: "up" },
+    { label: "Active Plans", value: "2,840", change: "+18%", icon: Package, color: "bg-amber-50 text-amber-600", trend: "up" },
+    { label: "Net Revenue", value: "GHS 47,200", change: "+15%", icon: DollarSign, color: "bg-indigo-50 text-indigo-600", trend: "up" },
+  ];
+
+  const recentUsers = users.slice(0, 4).map(u => {
+    let formattedPhone = u.phoneNumber;
+    if (u.phoneNumber && u.phoneNumber.length >= 9) {
+      formattedPhone = u.phoneNumber.substring(0, 6) + " *** " + u.phoneNumber.substring(u.phoneNumber.length - 4);
+    }
+    return {
+      id: u._id,
+      phone: formattedPhone,
+      joined: new Date(u.createdAt).toLocaleDateString('en-CA'),
+      plan: u.plan || "None",
+      status: u.status || "active"
+    };
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -37,7 +77,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {STATS.map((stat, idx) => (
+        {stats.map((stat, idx) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
             className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className={`w-13 h-13 w-[52px] h-[52px] rounded-2xl flex items-center justify-center ${stat.color}`}>
@@ -62,20 +102,29 @@ export default function AdminDashboard() {
             </Link>
           </div>
           <div className="space-y-3">
-            {RECENT_USERS.map((u) => (
-              <div key={u.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-                  <Users size={16} className="text-white" />
+            {loading ? (
+              <div className="text-center py-6 text-sm text-slate-400">Loading recent users...</div>
+            ) : recentUsers.length === 0 ? (
+              <div className="text-center py-6 text-sm text-slate-400">No users registered yet</div>
+            ) : (
+              recentUsers.map((u) => (
+                <div key={u.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
+                    <Users size={16} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 truncate">{u.phone}</p>
+                    <p className="text-xs text-slate-500">{u.plan} · {u.joined}</p>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
+                    u.status === "active" ? "bg-emerald-100 text-emerald-700" :
+                    u.status === "pending" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+                  }`}>
+                    {u.status}
+                  </span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 truncate">{u.phone}</p>
-                  <p className="text-xs text-slate-500">{u.plan} · {u.joined}</p>
-                </div>
-                <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${u.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                  {u.status}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
