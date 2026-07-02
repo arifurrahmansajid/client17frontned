@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight, Info, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { WITHDRAW_RULES } from "@/lib/data";
+import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 const TAX_RATE = 0.15;
 const MIN_WITHDRAWAL = 30;
@@ -11,12 +13,80 @@ const MIN_WITHDRAWAL = 30;
 export default function WithdrawPage() {
   const router = useRouter();
   const [amount, setAmount] = useState("");
+  const [balance, setBalance] = useState(0);
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/api/user/me`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setBalance(data.balance || 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const numericAmount = parseFloat(amount) || 0;
   const tax = numericAmount * TAX_RATE;
   const received = numericAmount - tax;
-  const balance = 4520;
+
+  const handleWithdraw = async () => {
+    if (numericAmount < MIN_WITHDRAWAL) {
+      toast.error(`Minimum withdrawal is GHS ${MIN_WITHDRAWAL}`);
+      return;
+    }
+
+    if (numericAmount > balance) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
+      if (!token) {
+        toast.error("Authentication required");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/user/withdraw`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: numericAmount })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success("Withdrawal request submitted successfully!");
+        setAmount("");
+        fetchProfile();
+      } else {
+        toast.error(data.message || "Failed to submit withdrawal");
+      }
+    } catch (err) {
+      console.error("Withdrawal error:", err);
+      toast.error("Network error while withdrawing");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-10">
@@ -34,7 +104,7 @@ export default function WithdrawPage() {
         {/* Balance Banner */}
         <div className="bg-gradient-to-r from-primary to-blue-700 rounded-3xl p-5 shadow-lg shadow-primary/20">
           <p className="text-white/70 text-xs font-medium mb-1">Available Balance</p>
-          <p className="text-3xl font-black text-white">GHS {balance.toLocaleString()}.00</p>
+          <p className="text-3xl font-black text-white">GHS {loading ? "..." : balance.toLocaleString()}</p>
           <div className="mt-3 flex items-center gap-2">
             <Info size={14} className="text-white/60" />
             <p className="text-white/70 text-xs">3 withdrawals remaining today</p>
@@ -113,7 +183,8 @@ export default function WithdrawPage() {
         )}
 
         <button
-          disabled={numericAmount < MIN_WITHDRAWAL || !numericAmount}
+          onClick={handleWithdraw}
+          disabled={numericAmount < MIN_WITHDRAWAL || !numericAmount || numericAmount > balance}
           className="w-full h-14 bg-primary text-white font-bold rounded-2xl text-base shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Withdraw Immediately
