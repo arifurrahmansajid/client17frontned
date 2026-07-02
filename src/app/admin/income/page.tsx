@@ -1,18 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
-
-const INCOME = [
-  { id: 1, user: "+233 55 123 4567", source: "VIP 2 Daily Yield", amount: 45, date: "2026-06-30 14:00" },
-  { id: 2, user: "+233 24 456 7890", source: "VIP 4 Daily Yield", amount: 150, date: "2026-06-30 14:00" },
-  { id: 3, user: "+233 50 987 6543", source: "VIP 1 Daily Yield", amount: 12, date: "2026-06-29 14:00" },
-];
+import { API_URL } from "@/lib/api";
 
 export default function AdminIncomePage() {
+  const [income, setIncome] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const filtered = INCOME.filter(i => i.user.includes(search) || i.source.toLowerCase().includes(search.toLowerCase()));
+
+  useEffect(() => {
+    const fetchIncome = async () => {
+      try {
+        const token = localStorage.getItem("vip_token");
+        if (!token) return;
+
+        const res = await fetch(`${API_URL}/api/user/income`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setIncome(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch income records:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncome();
+  }, []);
+
+  const formattedIncome = income.map(item => ({
+    id: item._id,
+    user: item.userPhone || "",
+    source: item.source || "",
+    amount: item.amount || 0,
+    date: item.createdAt ? new Date(item.createdAt).toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : ""
+  }));
+
+  const filtered = formattedIncome.filter(i => 
+    i.user.toLowerCase().includes(search.toLowerCase()) || 
+    i.source.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -41,15 +82,30 @@ export default function AdminIncomePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map((inc, idx) => (
-                <motion.tr key={inc.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.04 }}
-                  className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3.5 font-bold text-slate-900">{inc.user}</td>
-                  <td className="px-4 py-3.5 font-medium text-slate-700">{inc.source}</td>
-                  <td className="px-4 py-3.5 text-slate-500 text-xs font-medium">{inc.date}</td>
-                  <td className="px-4 py-3.5 font-black text-emerald-600">+{inc.amount}</td>
-                </motion.tr>
-              ))}
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">
+                    <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-2" />
+                    Loading income records...
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">
+                    No income records found
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((inc, idx) => (
+                  <motion.tr key={inc.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.04 }}
+                    className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3.5 font-bold text-slate-900">{inc.user}</td>
+                    <td className="px-4 py-3.5 font-medium text-slate-700">{inc.source}</td>
+                    <td className="px-4 py-3.5 text-slate-500 text-xs font-medium">{inc.date}</td>
+                    <td className="px-4 py-3.5 font-black text-emerald-600">+{inc.amount}</td>
+                  </motion.tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, TrendingUp, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { API_URL } from "@/lib/api";
 
 export default function RegisterPage() {
   const [showPw, setShowPw] = useState(false);
@@ -33,7 +34,7 @@ export default function RegisterPage() {
       const cleanPhone = phoneNumber.replace(/\s/g, '');
       const fullPhone = cleanPhone.startsWith('+233') ? cleanPhone : "+233" + cleanPhone;
 
-      const res = await fetch("https://client17backend-pkr5.vercel.app/api/auth/register", {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

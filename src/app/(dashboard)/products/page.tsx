@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, TrendingUp, Wallet, CheckCircle, X } from "lucide-react";
+import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -11,7 +13,7 @@ export default function ProductsPage() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    fetch("https://client17backend-pkr5.vercel.app/api/products")
+    fetch(`${API_URL}/api/products`)
       .then(res => res.json())
       .then(data => {
         if (data.success) setProducts(data.products);
@@ -21,11 +23,43 @@ export default function ProductsPage() {
   }, []);
 
   const handleConfirmPurchase = async () => {
+    if (!selectedProduct) return;
     setConfirming(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setConfirming(false);
-    setDone(true);
-    setTimeout(() => { setDone(false); setSelectedProduct(null); }, 1800);
+    try {
+      const token = localStorage.getItem("vip_token");
+      if (!token) {
+        toast.error("Authentication required");
+        setConfirming(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/products/purchase`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId: selectedProduct._id })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success("Purchase successful!");
+        setConfirming(false);
+        setDone(true);
+        setTimeout(() => { 
+          setDone(false); 
+          setSelectedProduct(null); 
+        }, 1800);
+      } else {
+        toast.error(data.message || "Failed to purchase plan");
+        setConfirming(false);
+      }
+    } catch (err) {
+      console.error("Purchase error:", err);
+      toast.error("Network error while purchasing plan");
+      setConfirming(false);
+    }
   };
 
   const closeModal = () => { if (!confirming) { setSelectedProduct(null); setDone(false); } };

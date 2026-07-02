@@ -1,9 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { ArrowLeft, Package, Clock, CheckCircle2, TrendingUp, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { VIP_PRODUCTS } from "@/lib/data";
+import { API_URL } from "@/lib/api";
 
 const MY_PRODUCTS = [
   { id: 1, productId: 2, purchaseDate: "2026-06-15", daysRemaining: 705, status: "running", earnedTotal: 656 },
@@ -12,6 +13,20 @@ const MY_PRODUCTS = [
 
 export default function MyProductsPage() {
   const router = useRouter();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/products`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setProducts(data.products);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-10">
@@ -21,84 +36,104 @@ export default function MyProductsPage() {
             <ArrowLeft size={20} className="text-slate-700" />
           </button>
           <h1 className="text-lg font-bold text-slate-900">My Products</h1>
-          <span className="ml-auto text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">{MY_PRODUCTS.length} Active</span>
+          <span className="ml-auto text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+            {MY_PRODUCTS.length} Active
+          </span>
         </div>
       </div>
 
       <div className="px-4 pt-4 space-y-4">
-        {MY_PRODUCTS.map((item, idx) => {
-          const product = VIP_PRODUCTS.find((p) => p.id === item.productId)!;
-          const progress = Math.round(((720 - item.daysRemaining) / 720) * 100);
-          return (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
-            >
-              <div className={`bg-gradient-to-r ${product.color} p-4 flex items-center gap-3`}>
-                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                  <Package size={24} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-black text-white">{product.name}</h3>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {item.status === "running" ? (
-                      <span className="text-[11px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                        Running
-                      </span>
-                    ) : (
-                      <span className="text-[11px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">Completed</span>
-                    )}
-                  </div>
-                </div>
-              </div>
+        {loading ? (
+          <div className="text-center text-xs text-slate-400 py-12">
+            <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-2" />
+            Loading purchased plans...
+          </div>
+        ) : (
+          MY_PRODUCTS.map((item, idx) => {
+            const targetName = `VIP${item.productId}`;
+            const targetNameAlt = `VIP ${item.productId}`;
+            const product = products.find(p => p.name === targetName || p.name === targetNameAlt) || products[item.productId - 1] || {
+              name: `VIP ${item.productId}`,
+              daily: item.productId === 1 ? 20 : 41,
+              days: 720,
+              total: item.productId === 1 ? 14400 : 29520,
+              color: "from-blue-500 to-blue-700"
+            };
 
-              <div className="p-4 space-y-3">
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-slate-50 rounded-2xl p-2.5 text-center">
-                    <TrendingUp size={16} className="text-emerald-600 mx-auto mb-1" />
-                    <p className="text-[10px] text-slate-500">Daily</p>
-                    <p className="text-sm font-black text-emerald-600">GHS {product.dailyIncome}</p>
+            const progress = Math.round(((720 - item.daysRemaining) / 720) * 100);
+            const colorClass = product.name === "VIP 1" || product.name === "VIP1" ? "from-blue-500 to-blue-700" : "from-indigo-500 to-indigo-700";
+
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
+              >
+                <div className={`bg-gradient-to-r ${colorClass} p-4 flex items-center gap-3`}>
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
+                    <Package size={24} className="text-white" />
                   </div>
-                  <div className="bg-slate-50 rounded-2xl p-2.5 text-center">
-                    <Clock size={16} className="text-primary mx-auto mb-1" />
-                    <p className="text-[10px] text-slate-500">Remaining</p>
-                    <p className="text-sm font-black text-primary">{item.daysRemaining}d</p>
-                  </div>
-                  <div className="bg-slate-50 rounded-2xl p-2.5 text-center">
-                    <CheckCircle2 size={16} className="text-violet-600 mx-auto mb-1" />
-                    <p className="text-[10px] text-slate-500">Earned</p>
-                    <p className="text-sm font-black text-violet-600">GHS {item.earnedTotal.toLocaleString()}</p>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-black text-white">{product.name}</h3>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {item.status === "running" ? (
+                        <span className="text-[11px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                          Running
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">Completed</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Progress */}
-                <div>
-                  <div className="flex justify-between text-xs text-slate-500 mb-1.5">
-                    <span>Progress</span>
-                    <span className="font-semibold">{progress}%</span>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-slate-50 rounded-2xl p-2.5 text-center">
+                      <TrendingUp size={16} className="text-emerald-600 mx-auto mb-1" />
+                      <p className="text-[10px] text-slate-500">Daily</p>
+                      <p className="text-sm font-black text-emerald-600">GHS {product.daily || product.dailyIncome}</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-2xl p-2.5 text-center">
+                      <Clock size={16} className="text-primary mx-auto mb-1" />
+                      <p className="text-[10px] text-slate-500">Remaining</p>
+                      <p className="text-sm font-black text-primary">{item.daysRemaining}d</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-2xl p-2.5 text-center">
+                      <CheckCircle2 size={16} className="text-violet-600 mx-auto mb-1" />
+                      <p className="text-[10px] text-slate-500">Earned</p>
+                      <p className="text-sm font-black text-violet-600">GHS {item.earnedTotal.toLocaleString()}</p>
+                    </div>
                   </div>
-                  <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress}%` }}
-                      transition={{ duration: 1, ease: "easeOut", delay: idx * 0.1 + 0.3 }}
-                      className={`h-full rounded-full bg-gradient-to-r ${product.color}`}
-                    />
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2 text-xs text-slate-500">
-                  <Calendar size={12} />
-                  <span>Purchased: {item.purchaseDate}</span>
+                  {/* Progress */}
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                      <span>Progress</span>
+                      <span className="font-semibold">{progress}%</span>
+                    </div>
+                    <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 1, ease: "easeOut", delay: idx * 0.1 + 0.3 }}
+                        className={`h-full rounded-full bg-gradient-to-r ${colorClass}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Calendar size={12} />
+                    <span>Purchased: {item.purchaseDate}</span>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })
+        )}
       </div>
     </div>
   );

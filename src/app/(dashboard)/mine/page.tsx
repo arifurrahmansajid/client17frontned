@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { API_URL } from "@/lib/api";
 
 export default function MinePage() {
   const phoneNumber = "+233 542114696";
@@ -20,7 +21,7 @@ export default function MinePage() {
         const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
         if (!token) return;
 
-        const res = await fetch("https://client17backend-pkr5.vercel.app/api/user/me", {
+        const res = await fetch(`${API_URL}/api/user/me`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -80,7 +81,7 @@ export default function MinePage() {
             return;
           }
 
-          const res = await fetch("https://client17backend-pkr5.vercel.app/api/user/avatar", {
+          const res = await fetch(`${API_URL}/api/user/avatar`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",

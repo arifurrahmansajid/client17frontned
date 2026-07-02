@@ -1,31 +1,102 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Package, Check, ShieldCheck, Clock, TrendingUp, Calendar } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { VIP_PRODUCTS } from "@/lib/data";
+import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const id = Number(params.id);
-  const product = VIP_PRODUCTS.find((p) => p.id === id) ?? VIP_PRODUCTS[0];
+  const [product, setProduct] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [purchased, setPurchased] = useState(false);
 
-  const handleBuy = () => {
-    setPurchased(true);
-    setTimeout(() => {
-      setShowModal(false);
-      router.push("/my-products");
-    }, 1800);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/products`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            const found = data.products.find((p: any) => p._id === params.id);
+            setProduct(found || data.products[0] || null);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch product:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.id) {
+      fetchProduct();
+    }
+  }, [params.id]);
+
+  const handleBuy = async () => {
+    try {
+      const token = localStorage.getItem("vip_token");
+      if (!token) {
+        toast.error("Authentication required");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/products/purchase`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId: product._id })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success("Purchase successful!");
+        setPurchased(true);
+        setTimeout(() => {
+          setShowModal(false);
+          router.push("/my-products");
+        }, 1800);
+      } else {
+        toast.error(data.message || "Failed to purchase plan");
+      }
+    } catch (err) {
+      console.error("Purchase error:", err);
+      toast.error("Network error while purchasing plan");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center py-12">
+        <div className="w-8 h-8 border-4 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin mb-2" />
+        <p className="text-sm text-slate-400 font-medium">Loading plan details...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+        <Package size={48} className="text-slate-300 mb-3" />
+        <h2 className="text-lg font-bold text-slate-800">Plan Not Found</h2>
+        <button onClick={() => router.back()} className="mt-4 px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all">
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pb-10">
       {/* Header */}
-      <div className={`bg-gradient-to-br ${product.color} px-4 pt-4 pb-16`}>
+      <div className="bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-600 px-4 pt-4 pb-16">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => router.back()} className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-colors">
             <ArrowLeft size={20} className="text-white" />
@@ -33,13 +104,19 @@ export default function ProductDetailPage() {
           <h1 className="text-lg font-bold text-white">Plan Details</h1>
         </div>
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-3xl bg-white/20 flex items-center justify-center">
-            <Package size={40} className="text-white" />
+          <div className="w-20 h-20 rounded-3xl bg-white/20 flex items-center justify-center overflow-hidden shrink-0 border border-white/10 shadow-inner">
+            {product.image ? (
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            ) : (
+              <Package size={40} className="text-white" />
+            )}
           </div>
           <div>
-            <div className="inline-flex items-center gap-1 bg-white/20 px-2.5 py-1 rounded-full mb-1.5">
-              <span className="text-white/90 text-[11px] font-semibold">{product.badge}</span>
-            </div>
+            {product.badge && (
+              <div className="inline-flex items-center gap-1 bg-white/20 px-2.5 py-1 rounded-full mb-1.5">
+                <span className="text-white/90 text-[11px] font-semibold">{product.badge}</span>
+              </div>
+            )}
             <h2 className="text-2xl font-black text-white">{product.name}</h2>
             <p className="text-white/75 text-sm font-medium">Investment Plan</p>
           </div>
@@ -53,11 +130,13 @@ export default function ProductDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-slate-500 mb-1">Investment Amount</p>
-              <p className="text-3xl font-black text-primary">GHS {product.price.toLocaleString()}</p>
+              <p className="text-3xl font-black text-primary">GHS {(product.price || 0).toLocaleString()}</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-slate-500 mb-1">ROI</p>
-              <p className="text-xl font-bold text-emerald-600">{Math.round((product.totalIncome / product.price - 1) * 100)}%</p>
+              <p className="text-xl font-bold text-emerald-600">
+                {product.price ? Math.round(((product.total || 0) / product.price - 1) * 100) : 0}%
+              </p>
             </div>
           </div>
         </div>
@@ -65,9 +144,9 @@ export default function ProductDetailPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
           {[
-            { icon: TrendingUp, label: "Daily Income", value: `GHS ${product.dailyIncome}`, color: "text-emerald-600", bg: "bg-emerald-50" },
-            { icon: Calendar, label: "Period", value: `${product.days} Days`, color: "text-primary", bg: "bg-blue-50" },
-            { icon: ShieldCheck, label: "Total Return", value: `GHS ${product.totalIncome.toLocaleString()}`, color: "text-violet-600", bg: "bg-violet-50" },
+            { icon: TrendingUp, label: "Daily Income", value: `GHS ${(product.daily || 0).toLocaleString()}`, color: "text-emerald-600", bg: "bg-emerald-50" },
+            { icon: Calendar, label: "Period", value: `${product.days || 0} Days`, color: "text-primary", bg: "bg-blue-50" },
+            { icon: ShieldCheck, label: "Total Return", value: `GHS ${(product.total || 0).toLocaleString()}`, color: "text-violet-600", bg: "bg-violet-50" },
             { icon: Clock, label: "Income After", value: "24 Hours", color: "text-amber-600", bg: "bg-amber-50" },
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
@@ -87,7 +166,7 @@ export default function ProductDetailPage() {
             {[
               "Income starts 24 hours after purchase",
               "Daily income is automatically credited",
-              "Plan runs for 720 consecutive days",
+              "Plan runs for specified consecutive days",
               "Plan cannot be cancelled after purchase",
               "You can purchase multiple plans",
             ].map((rule, i) => (
@@ -102,12 +181,21 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Buy Button */}
-        <button
-          onClick={() => setShowModal(true)}
-          className="w-full h-14 bg-primary text-white font-bold rounded-2xl text-base shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all hover:shadow-xl active:scale-[0.98]"
-        >
-          Purchase {product.name} — GHS {product.price}
-        </button>
+        {product.active !== false ? (
+          <button
+            onClick={() => setShowModal(true)}
+            className="w-full h-14 bg-primary text-white font-bold rounded-2xl text-base shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all hover:shadow-xl active:scale-[0.98]"
+          >
+            Purchase {product.name} — GHS {product.price}
+          </button>
+        ) : (
+          <button
+            disabled
+            className="w-full h-14 bg-slate-300 text-slate-600 font-bold rounded-2xl text-base cursor-not-allowed opacity-80"
+          >
+            🔒 Plan Coming Soon
+          </button>
+        )}
       </div>
 
       {/* Confirmation Modal */}
@@ -155,7 +243,7 @@ export default function ProductDetailPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-500">Daily Income</span>
-                      <span className="font-semibold text-emerald-600">GHS {product.dailyIncome}</span>
+                      <span className="font-semibold text-emerald-600">GHS {product.daily}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-500">Duration</span>
