@@ -25,7 +25,7 @@ export default function MinePage() {
             "Authorization": `Bearer ${token}`
           }
         });
-        
+
         if (res.ok) {
           const data = await res.json();
           if (data.avatar) {
@@ -63,11 +63,11 @@ export default function MinePage() {
       }
 
       const toastId = toast.loading("Updating profile picture...");
-      
+
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64String = reader.result as string;
-        
+
         // Optimistic update
         setProfilePic(base64String);
         localStorage.setItem("profilePic", base64String);
@@ -117,9 +117,9 @@ export default function MinePage() {
         {/* User Card */}
         <div className="bg-white rounded-[24px] p-5 shadow-xl shadow-violet-200/30 border border-violet-100">
           <div className="flex items-center gap-4 border-b border-violet-50 pb-5">
-            
+
             {/* Avatar Upload */}
-            <div 
+            <div
               className="relative w-14 h-14 bg-gradient-to-tr from-indigo-600 via-violet-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-inner text-white font-black text-2xl shadow-violet-500/30 cursor-pointer group shrink-0"
               onClick={() => fileInputRef.current?.click()}
             >
@@ -128,12 +128,12 @@ export default function MinePage() {
               ) : (
                 "U"
               )}
-              
+
               {/* Overlay for hover */}
               <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera size={20} className="text-white" />
               </div>
-              
+
               {/* Small badge icon */}
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 group-hover:scale-0 transition-transform">
                 <div className="w-4 h-4 bg-violet-600 rounded-full flex items-center justify-center">
@@ -141,15 +141,15 @@ export default function MinePage() {
                 </div>
               </div>
 
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                accept="image/*" 
-                className="hidden" 
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
               />
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <p className="text-slate-900 font-black text-lg tracking-tight truncate">{phoneNumber}</p>
               <span className="inline-block bg-amber-100 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-md mt-1 uppercase tracking-wider">VIP Member</span>

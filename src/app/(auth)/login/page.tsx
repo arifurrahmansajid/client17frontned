@@ -18,7 +18,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
       // Clean phone number and prepend +233 if needed
       const cleanPhone = phoneNumber.replace(/\s/g, '');
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
       localStorage.setItem("vip_token", data.token);
       localStorage.setItem("vip_role", data.user.role);
-      
+
       if (data.user.role === 'admin' || data.user.role === 'super_admin') {
         router.push("/admin");
       } else {

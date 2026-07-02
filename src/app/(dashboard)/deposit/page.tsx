@@ -7,19 +7,17 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const METHODS = [
   { id: "bank", icon: Landmark, label: "Bank Transfer", sub: "Standard bank wire" },
-  { id: "momo", icon: Smartphone, label: "Mobile Money", sub: "MTN, Vodafone, AirtelTigo" },
-  { id: "crypto", icon: Bitcoin, label: "Crypto (USDT)", sub: "TRC20 / ERC20" },
 ];
 
 const HISTORY = [
-  { id: 1, amount: 500, method: "Mobile Money", date: "2026-06-29", status: "approved" },
+  { id: 1, amount: 500, method: "Bank Transfer", date: "2026-06-29", status: "approved" },
   { id: 2, amount: 200, method: "Bank Transfer", date: "2026-06-22", status: "approved" },
-  { id: 3, amount: 100, method: "Mobile Money", date: "2026-06-15", status: "pending" },
+  { id: 3, amount: 100, method: "Bank Transfer", date: "2026-06-15", status: "pending" },
 ];
 
 export default function DepositPage() {
   const router = useRouter();
-  const [method, setMethod] = useState("momo");
+  const [method, setMethod] = useState("bank");
   const [amount, setAmount] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -66,14 +64,6 @@ export default function DepositPage() {
 
         {/* Deposit Info */}
         <AnimatePresence mode="wait">
-          {method === "momo" && (
-            <motion.div key="momo" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-              className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-              <p className="font-bold text-emerald-800 text-sm mb-1">Mobile Money Details</p>
-              <p className="text-sm text-emerald-700">Send to: <strong>055 *** 1234</strong></p>
-              <p className="text-sm text-emerald-700">Name: <strong>VIP INVEST LTD</strong></p>
-            </motion.div>
-          )}
           {method === "bank" && (
             <motion.div key="bank" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
               className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-1">
@@ -81,13 +71,6 @@ export default function DepositPage() {
               <p className="text-sm text-blue-700">Bank: <strong>GCB Bank</strong></p>
               <p className="text-sm text-blue-700">Account: <strong>1234567890</strong></p>
               <p className="text-sm text-blue-700">Name: <strong>VIP INVEST LTD</strong></p>
-            </motion.div>
-          )}
-          {method === "crypto" && (
-            <motion.div key="crypto" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-              className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-              <p className="font-bold text-amber-800 text-sm mb-1">USDT Wallet Address (TRC20)</p>
-              <p className="text-xs font-mono text-amber-700 break-all">TXhJ8D2...k9P3qRs (example address)</p>
             </motion.div>
           )}
         </AnimatePresence>

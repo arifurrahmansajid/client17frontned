@@ -7,8 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const WALLET_TYPES = [
   { id: "bank", icon: Landmark, label: "Bank Account", color: "text-primary bg-blue-50" },
-  { id: "momo", icon: Smartphone, label: "Mobile Money", color: "text-emerald-600 bg-emerald-50" },
-  { id: "crypto", icon: Bitcoin, label: "Crypto Wallet", color: "text-amber-600 bg-amber-50" },
 ];
 
 const INITIAL_WALLETS = [

@@ -36,9 +36,9 @@ export default function RegisterPage() {
       const res = await fetch("https://client17backend-pkr5.vercel.app/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          phoneNumber: fullPhone, 
-          password 
+        body: JSON.stringify({
+          phoneNumber: fullPhone,
+          password
           // Note: inviteCode could be passed here if the backend model supported it
         })
       });

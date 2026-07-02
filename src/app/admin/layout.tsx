@@ -19,12 +19,13 @@ const NAV_ITEMS = [
   { label: "Withdrawals", href: "/admin/withdrawals", icon: ArrowUpFromLine },
   { label: "Transactions", href: "/admin/transactions", icon: ReceiptText },
   { label: "Referral System", href: "/admin/referrals", icon: GitBranch },
+  { label: "Team Management", href: "/admin/team-management", icon: Users },
   { label: "Income Records", href: "/admin/income", icon: TrendingUp },
   { label: "Announcements", href: "/admin/announcements", icon: Megaphone },
-  { label: "Banner Mgmt", href: "/admin/banners", icon: Image },
+  // { label: "Banner Mgmt", href: "/admin/banners", icon: Image },
   { label: "Support Tickets", href: "/admin/tickets", icon: HeadphonesIcon },
   { label: "Wallet Settings", href: "/admin/wallets", icon: Wallet },
-  { label: "Reports", href: "/admin/reports", icon: BarChart3 },
+  // { label: "Reports", href: "/admin/reports", icon: BarChart3 },
   { label: "Settings", href: "/admin/settings", icon: Settings },
   { label: "Role Management", href: "/admin/roles", icon: ShieldCheck },
 ];
@@ -36,16 +37,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div className={cn("flex flex-col h-full", mobile ? "" : "")}>
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
+      <div className="px-6 py-5 border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
             <TrendingUp size={20} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-black text-white">VIP Invest</p>
-            <p className="text-[10px] text-slate-500">Admin Panel</p>
+            <p className="text-sm font-black text-white">PAISON VIP</p>
+            <p className="text-[10px] text-slate-500 font-medium mt-0.5 tracking-wide uppercase">Admin Panel</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Nav */}
