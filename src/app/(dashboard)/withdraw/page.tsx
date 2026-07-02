@@ -7,21 +7,21 @@ import { WITHDRAW_RULES } from "@/lib/data";
 import { API_URL } from "@/lib/api";
 import { toast } from "sonner";
 
-const TAX_RATE = 0.15;
-const MIN_WITHDRAWAL = 30;
-
 export default function WithdrawPage() {
   const router = useRouter();
   const [amount, setAmount] = useState("");
   const [balance, setBalance] = useState(0);
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [minWithdrawal, setMinWithdrawal] = useState(30);
+  const [taxRate, setTaxRate] = useState(0.15);
 
-  const fetchProfile = async () => {
+  const fetchProfileAndSettings = async () => {
     try {
       const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
       if (!token) return;
 
+      // 1. Fetch Profile Balance
       const res = await fetch(`${API_URL}/api/user/me`, {
         headers: {
           "Authorization": `Bearer ${token}`
@@ -32,24 +32,34 @@ export default function WithdrawPage() {
         const data = await res.json();
         setBalance(data.balance || 0);
       }
+
+      // 2. Fetch Platform Settings
+      const settingsRes = await fetch(`${API_URL}/api/user/settings`);
+      if (settingsRes.ok) {
+        const settingsData = await settingsRes.json();
+        if (settingsData.success && settingsData.settings) {
+          setMinWithdrawal(settingsData.settings.minWithdrawal || 30);
+          setTaxRate((settingsData.settings.withdrawFee || 15) / 100);
+        }
+      }
     } catch (err) {
-      console.error("Failed to fetch profile:", err);
+      console.error("Failed to fetch profile or settings:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProfile();
+    fetchProfileAndSettings();
   }, []);
 
   const numericAmount = parseFloat(amount) || 0;
-  const tax = numericAmount * TAX_RATE;
+  const tax = numericAmount * taxRate;
   const received = numericAmount - tax;
 
   const handleWithdraw = async () => {
-    if (numericAmount < MIN_WITHDRAWAL) {
-      toast.error(`Minimum withdrawal is GHS ${MIN_WITHDRAWAL}`);
+    if (numericAmount < minWithdrawal) {
+      toast.error(`Minimum withdrawal is GHS ${minWithdrawal}`);
       return;
     }
 
@@ -78,7 +88,7 @@ export default function WithdrawPage() {
       if (res.ok && data.success) {
         toast.success("Withdrawal request submitted successfully!");
         setAmount("");
-        fetchProfile();
+        fetchProfileAndSettings();
       } else {
         toast.error(data.message || "Failed to submit withdrawal");
       }
@@ -138,7 +148,7 @@ export default function WithdrawPage() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              min={MIN_WITHDRAWAL}
+              min={minWithdrawal}
               max={balance}
               className="w-full h-14 pl-16 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
@@ -164,7 +174,7 @@ export default function WithdrawPage() {
               <span className="text-white font-semibold">GHS {numericAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Tax (15%)</span>
+              <span className="text-slate-400">Tax ({(taxRate * 100).toFixed(0)}%)</span>
               <span className="text-red-400 font-semibold">- GHS {tax.toFixed(2)}</span>
             </div>
             <div className="border-t border-slate-700 pt-3 flex justify-between">
@@ -175,16 +185,16 @@ export default function WithdrawPage() {
         )}
 
         {/* Warning */}
-        {numericAmount > 0 && numericAmount < MIN_WITHDRAWAL && (
+        {numericAmount > 0 && numericAmount < minWithdrawal && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-3 flex items-center gap-2">
             <AlertCircle size={16} className="text-red-500 shrink-0" />
-            <p className="text-sm text-red-600 font-medium">Minimum withdrawal is GHS {MIN_WITHDRAWAL}</p>
+            <p className="text-sm text-red-600 font-medium">Minimum withdrawal is GHS {minWithdrawal}</p>
           </div>
         )}
 
         <button
           onClick={handleWithdraw}
-          disabled={numericAmount < MIN_WITHDRAWAL || !numericAmount || numericAmount > balance}
+          disabled={numericAmount < minWithdrawal || !numericAmount || numericAmount > balance}
           className="w-full h-14 bg-primary text-white font-bold rounded-2xl text-base shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Withdraw Immediately

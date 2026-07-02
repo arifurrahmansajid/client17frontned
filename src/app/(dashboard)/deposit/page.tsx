@@ -19,12 +19,15 @@ export default function DepositPage() {
   const [submitted, setSubmitted] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [minDeposit, setMinDeposit] = useState(50);
+  const [depositInstructions, setDepositInstructions] = useState("Please transfer exact amount to our MOMO number.");
 
-  const fetchHistory = async () => {
+  const fetchHistoryAndSettings = async () => {
     try {
       const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
       if (!token) return;
 
+      // 1. Fetch History
       const res = await fetch(`${API_URL}/api/user/my-deposits`, {
         headers: {
           "Authorization": `Bearer ${token}`
@@ -35,21 +38,32 @@ export default function DepositPage() {
         const data = await res.json();
         setHistory(data);
       }
+
+      // 2. Fetch Settings
+      const settingsRes = await fetch(`${API_URL}/api/user/settings`);
+      if (settingsRes.ok) {
+        const settingsData = await settingsRes.json();
+        if (settingsData.success && settingsData.settings) {
+          setMinDeposit(settingsData.settings.minDeposit || 50);
+          setDepositInstructions(settingsData.settings.depositInstructions || "Please transfer exact amount to our MOMO number.");
+        }
+      }
     } catch (err) {
-      console.error("Failed to fetch deposit history:", err);
+      console.error("Failed to fetch deposit page data:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchHistory();
+    fetchHistoryAndSettings();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      toast.error("Please enter a valid deposit amount");
+    const numAmount = Number(amount);
+    if (!amount || isNaN(numAmount) || numAmount < minDeposit) {
+      toast.error(`Minimum deposit is GHS ${minDeposit}`);
       return;
     }
 
@@ -67,7 +81,7 @@ export default function DepositPage() {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          amount: Number(amount),
+          amount: numAmount,
           method: method === "bank" ? "Bank Transfer" : "Mobile Money"
         })
       });
@@ -78,7 +92,7 @@ export default function DepositPage() {
         setAmount("");
         setFile(null);
         toast.success("Deposit request submitted successfully!");
-        fetchHistory();
+        fetchHistoryAndSettings();
         setTimeout(() => setSubmitted(false), 3000);
       } else {
         toast.error(data.message || "Failed to submit deposit request");
@@ -128,10 +142,13 @@ export default function DepositPage() {
           {method === "bank" && (
             <motion.div key="bank" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
               className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-1">
-              <p className="font-bold text-blue-800 text-sm mb-1">Bank Transfer Details</p>
+              <p className="font-bold text-blue-800 text-sm mb-1">Bank Transfer Details & Instructions</p>
               <p className="text-sm text-blue-700">Bank: <strong>GCB Bank</strong></p>
               <p className="text-sm text-blue-700">Account: <strong>1234567890</strong></p>
               <p className="text-sm text-blue-700">Name: <strong>VIP INVEST LTD</strong></p>
+              <p className="text-xs text-blue-600/90 mt-2 font-medium bg-blue-100/50 p-2 rounded-xl border border-blue-200/50 leading-relaxed">
+                💡 {depositInstructions}
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -139,11 +156,11 @@ export default function DepositPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm space-y-4">
           <div>
-            <label className="text-sm font-semibold text-slate-700 mb-2 block">Deposit Amount</label>
+            <label className="text-sm font-semibold text-slate-700 mb-2 block">Deposit Amount (Min. GHS {minDeposit})</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">GHS</span>
               <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00" min="1" required
+                placeholder="0.00" min={minDeposit} required
                 className="w-full h-12 pl-14 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
