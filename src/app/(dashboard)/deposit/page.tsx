@@ -1,18 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Upload, Landmark, Smartphone, Bitcoin, Check, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Upload, Landmark, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 const METHODS = [
   { id: "bank", icon: Landmark, label: "Bank Transfer", sub: "Standard bank wire" },
-];
-
-const HISTORY = [
-  { id: 1, amount: 500, method: "Bank Transfer", date: "2026-06-29", status: "approved" },
-  { id: 2, amount: 200, method: "Bank Transfer", date: "2026-06-22", status: "approved" },
-  { id: 3, amount: 100, method: "Bank Transfer", date: "2026-06-15", status: "pending" },
 ];
 
 export default function DepositPage() {
@@ -21,11 +17,76 @@ export default function DepositPage() {
   const [amount, setAmount] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fetchHistory = async () => {
+    try {
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/api/user/my-deposits`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch deposit history:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      toast.error("Please enter a valid deposit amount");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
+      if (!token) {
+        toast.error("Authentication required");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/user/deposit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          amount: Number(amount),
+          method: method === "bank" ? "Bank Transfer" : "Mobile Money"
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSubmitted(true);
+        setAmount("");
+        setFile(null);
+        toast.success("Deposit request submitted successfully!");
+        fetchHistory();
+        setTimeout(() => setSubmitted(false), 3000);
+      } else {
+        toast.error(data.message || "Failed to submit deposit request");
+      }
+    } catch (err) {
+      console.error("Submit deposit error:", err);
+      toast.error("Network error while submitting deposit");
+    }
   };
 
   return (
@@ -125,20 +186,31 @@ export default function DepositPage() {
         <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm">
           <h3 className="font-bold text-slate-900 mb-4">Deposit History</h3>
           <div className="space-y-3">
-            {HISTORY.map((h) => (
-              <div key={h.id} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center">
-                  <ArrowLeft size={18} className="text-primary rotate-[-90deg]" />
+            {loading ? (
+              <div className="text-center py-6 text-sm text-slate-400">Loading history...</div>
+            ) : history.length === 0 ? (
+              <div className="text-center py-6 text-sm text-slate-400">No deposits recorded yet</div>
+            ) : (
+              history.map((h) => (
+                <div key={h._id} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center">
+                    <ArrowLeft size={18} className="text-primary rotate-[-90deg]" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm text-slate-900">GHS {(h.amount || 0).toLocaleString()}</p>
+                    <p className="text-xs text-slate-500">
+                      {h.description || "Bank Transfer"} · {h.createdAt ? new Date(h.createdAt).toLocaleDateString() : ""}
+                    </p>
+                  </div>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${
+                    h.status === "approved" || h.status === "completed" ? "bg-emerald-100 text-emerald-700" :
+                    h.status === "pending" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+                  }`}>
+                    {h.status}
+                  </span>
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm text-slate-900">GHS {h.amount}</p>
-                  <p className="text-xs text-slate-500">{h.method} · {h.date}</p>
-                </div>
-                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${h.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                  {h.status}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
