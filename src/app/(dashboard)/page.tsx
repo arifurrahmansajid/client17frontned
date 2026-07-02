@@ -4,6 +4,7 @@ import { Wallet, ArrowDownToLine, HeadphonesIcon, Megaphone, ArrowRight, ShieldC
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_URL } from "@/lib/api";
 const SLIDES = [
   {
     image: "/Gemini_Generated_Image_u3l7yeu3l7yeu3l7 (1).png",
@@ -25,6 +26,18 @@ const SLIDES = [
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/announcements`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setAnnouncements(data.announcements || []);
+        }
+      })
+      .catch(err => console.error("Failed to load announcements:", err));
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -110,14 +123,23 @@ export default function HomePage() {
       <div className="bg-white px-4 py-3.5 flex items-center gap-3 mt-4 mx-3 rounded-2xl shadow-sm border border-violet-100">
         <Megaphone size={18} className="text-violet-600 shrink-0 animate-pulse" />
         <div className="overflow-hidden flex-1 relative h-4">
-          <motion.div
-            initial={{ x: 400 }}
-            animate={{ x: "-100%" }}
-            transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
-            className="absolute whitespace-nowrap text-xs text-slate-700 font-medium"
-          >
-            🎉 Welcome to PAISON VIP Official Investment Hub! 🚀 Signup Bonus $10 USDT TRC20 credited instantly! 💰 Member ***842 just withdrew 1,250 USDT successfully! 🔥 Level 1 referral rewards increased to 10%!
-          </motion.div>
+          {(() => {
+            const marqueeText = announcements.length > 0 
+              ? announcements.map(a => `🔥 ${a.title}: ${a.message}`).join("   |   ")
+              : "🎉 Welcome to PAISON VIP Official Investment Hub! 🚀 Signup Bonus $10 USDT TRC20 credited instantly! 💰 Member ***842 just withdrew 1,250 USDT successfully! 🔥 Level 1 referral rewards increased to 10%!";
+            return (
+              <motion.div
+                key={marqueeText}
+                initial={{ x: "100%" }}
+                animate={{ x: "-110%" }}
+                transition={{ repeat: Infinity, duration: Math.max(10, marqueeText.length * 0.08), ease: "linear" }}
+                className="absolute left-0 top-0 whitespace-nowrap text-xs text-slate-700 font-medium"
+                style={{ width: "max-content" }}
+              >
+                {marqueeText}
+              </motion.div>
+            );
+          })()}
         </div>
       </div>
 
