@@ -1,98 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Users, Search, Ban, CheckCircle, Eye, ShieldAlert, X, AlertTriangle, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const mockTeams = [
-  { 
-    id: 1, 
-    inviteCode: "UJGIDZ", 
-    phone: "+233 551234567", 
-    joinDate: "2026-06-15",
-    teamSize: 45, 
-    activeMembers: 12, 
-    commission: 450.50, 
-    status: "Active", 
-    banReason: "",
-    teamDetails: { level1: 15, level2: 20, level3: 10 },
-    members: [
-      { phone: "+233 54***112", level: 1, commissionRate: "20%", contribution: 120.00 },
-      { phone: "+233 24***998", level: 1, commissionRate: "20%", contribution: 45.50 },
-      { phone: "+233 55***334", level: 2, commissionRate: "3%", contribution: 12.00 },
-      { phone: "+233 20***111", level: 3, commissionRate: "2%", contribution: 4.50 },
-    ]
-  },
-  { 
-    id: 2, 
-    inviteCode: "VXM98P", 
-    phone: "+233 559876543", 
-    joinDate: "2026-06-20",
-    teamSize: 12, 
-    activeMembers: 4, 
-    commission: 120.00, 
-    status: "Active", 
-    banReason: "",
-    teamDetails: { level1: 5, level2: 5, level3: 2 },
-    members: [
-      { phone: "+233 54***000", level: 1, commissionRate: "20%", contribution: 80.00 },
-      { phone: "+233 24***222", level: 2, commissionRate: "3%", contribution: 15.00 },
-    ]
-  },
-  { 
-    id: 3, 
-    inviteCode: "BBY77K", 
-    phone: "+233 541112233", 
-    joinDate: "2026-05-10",
-    teamSize: 89, 
-    activeMembers: 34, 
-    commission: 1250.75, 
-    status: "Banned", 
-    banReason: "Suspicious bulk referral creation.",
-    teamDetails: { level1: 30, level2: 40, level3: 19 },
-    members: [
-      { phone: "+233 55***444", level: 1, commissionRate: "20%", contribution: 500.00 },
-      { phone: "+233 54***555", level: 1, commissionRate: "20%", contribution: 250.00 },
-      { phone: "+233 24***666", level: 2, commissionRate: "3%", contribution: 45.00 },
-    ]
-  },
-  { 
-    id: 4, 
-    inviteCode: "SC2026", 
-    phone: "+233 245558899", 
-    joinDate: "2026-06-25",
-    teamSize: 3, 
-    activeMembers: 1, 
-    commission: 15.00, 
-    status: "Active", 
-    banReason: "",
-    teamDetails: { level1: 3, level2: 0, level3: 0 },
-    members: [
-      { phone: "+233 54***777", level: 1, commissionRate: "20%", contribution: 15.00 },
-    ]
-  },
-  { 
-    id: 5, 
-    inviteCode: "MGT99X", 
-    phone: "+233 557778888", 
-    joinDate: "2026-04-05",
-    teamSize: 156, 
-    activeMembers: 89, 
-    commission: 4500.00, 
-    status: "Active", 
-    banReason: "",
-    teamDetails: { level1: 45, level2: 60, level3: 51 },
-    members: [
-      { phone: "+233 20***888", level: 1, commissionRate: "20%", contribution: 1200.00 },
-      { phone: "+233 55***999", level: 1, commissionRate: "20%", contribution: 850.00 },
-      { phone: "+233 54***123", level: 2, commissionRate: "3%", contribution: 120.00 },
-      { phone: "+233 24***456", level: 3, commissionRate: "2%", contribution: 45.00 },
-    ]
-  }
-];
+import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function TeamManagementPage() {
-  const [teams, setTeams] = useState(mockTeams);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
   // Modals state
@@ -101,9 +17,35 @@ export default function TeamManagementPage() {
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
   const [banReason, setBanReason] = useState("");
 
+  const fetchTeams = async () => {
+    try {
+      const token = localStorage.getItem("vip_token");
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/api/user/admin/teams`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setTeams(data.teams || []);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load admin teams stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
   const filteredTeams = teams.filter(t => 
-    t.inviteCode.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.phone.includes(searchTerm)
+    (t.inviteCode && t.inviteCode.toLowerCase().includes(searchTerm.toLowerCase())) || 
+    (t.phone && t.phone.includes(searchTerm))
   );
 
   const openBanModal = (team: any) => {
@@ -112,30 +54,70 @@ export default function TeamManagementPage() {
     setBanModalOpen(true);
   };
 
-  const handleBan = (e: React.FormEvent) => {
+  const handleBan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!banReason.trim()) return;
+    if (!banReason.trim() || !selectedTeam) return;
 
-    setTeams(teams.map(t => 
-      t.id === selectedTeam.id 
-        ? { ...t, status: "Banned", banReason: banReason } 
-        : t
-    ));
-    setBanModalOpen(false);
+    try {
+      const token = localStorage.getItem("vip_token");
+      const res = await fetch(`${API_URL}/api/user/update/${selectedTeam.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: "suspended" })
+      });
+
+      if (res.ok) {
+        toast.success(`Team ${selectedTeam.inviteCode} banned successfully.`);
+        fetchTeams();
+      } else {
+        toast.error("Failed to suspend team owner.");
+      }
+    } catch (err) {
+      toast.error("Error connecting to server.");
+    } finally {
+      setBanModalOpen(false);
+    }
   };
 
-  const handleUnban = (teamId: number) => {
-    setTeams(teams.map(t => 
-      t.id === teamId 
-        ? { ...t, status: "Active", banReason: "" } 
-        : t
-    ));
+  const handleUnban = async (teamId: string, inviteCode: string) => {
+    try {
+      const token = localStorage.getItem("vip_token");
+      const res = await fetch(`${API_URL}/api/user/update/${teamId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: "active" })
+      });
+
+      if (res.ok) {
+        toast.success(`Team ${inviteCode} activated successfully.`);
+        fetchTeams();
+      } else {
+        toast.error("Failed to activate team owner.");
+      }
+    } catch (err) {
+      toast.error("Error connecting to server.");
+    }
   };
 
   const openDetailsModal = (team: any) => {
     setSelectedTeam(team);
     setDetailsModalOpen(true);
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-500 text-sm">
+        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-2" />
+        Loading team structures...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -176,7 +158,7 @@ export default function TeamManagementPage() {
           <div>
             <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Active Members</p>
             <p className="text-slate-900 font-black text-2xl leading-none">
-              {teams.reduce((acc, t) => acc + t.activeMembers, 0)}
+              {teams.reduce((acc, t) => acc + (t.activeMembers || 0), 0)}
             </p>
           </div>
         </div>
@@ -269,7 +251,7 @@ export default function TeamManagementPage() {
                           </button>
                         ) : (
                           <button 
-                            onClick={() => handleUnban(team.id)}
+                            onClick={() => handleUnban(team.id, team.inviteCode)}
                             className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                             title="Unban Team"
                           >
@@ -306,7 +288,7 @@ export default function TeamManagementPage() {
               
               <form onSubmit={handleBan} className="p-6">
                 <p className="text-slate-600 text-sm mb-5">
-                  You are about to ban the team with invite code <strong className="text-slate-900">{selectedTeam.inviteCode}</strong>. Please provide a reason.
+                  You are about to suspend the team owner with invite code <strong className="text-slate-900">{selectedTeam.inviteCode}</strong>.
                 </p>
                 
                 <div className="mb-6">
@@ -368,7 +350,7 @@ export default function TeamManagementPage() {
                     <div>
                       <p className="text-red-800 font-bold text-sm">Account Banned</p>
                       <p className="text-red-600 text-xs mt-1 leading-relaxed">
-                        <span className="font-semibold">Reason:</span> {selectedTeam.banReason}
+                        <span className="font-semibold">Reason:</span> {selectedTeam.banReason || "Suspended by admin."}
                       </p>
                     </div>
                   </div>
@@ -381,17 +363,17 @@ export default function TeamManagementPage() {
                   </h4>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 text-center shadow-sm">
-                      <p className="text-slate-500 text-xs font-bold uppercase mb-1">Level 1 (20%)</p>
+                      <p className="text-slate-500 text-xs font-bold uppercase mb-1">Level 1</p>
                       <p className="text-2xl font-black text-indigo-700">{selectedTeam.teamDetails.level1}</p>
                       <p className="text-[10px] text-slate-400 mt-1">Direct Referrals</p>
                     </div>
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 text-center shadow-sm">
-                      <p className="text-slate-500 text-xs font-bold uppercase mb-1">Level 2 (3%)</p>
+                      <p className="text-slate-500 text-xs font-bold uppercase mb-1">Level 2</p>
                       <p className="text-2xl font-black text-indigo-600">{selectedTeam.teamDetails.level2}</p>
                       <p className="text-[10px] text-slate-400 mt-1">Indirect (L1)</p>
                     </div>
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 text-center shadow-sm">
-                      <p className="text-slate-500 text-xs font-bold uppercase mb-1">Level 3 (2%)</p>
+                      <p className="text-slate-500 text-xs font-bold uppercase mb-1">Level 3</p>
                       <p className="text-2xl font-black text-violet-500">{selectedTeam.teamDetails.level3}</p>
                       <p className="text-[10px] text-slate-400 mt-1">Indirect (L2)</p>
                     </div>
@@ -401,7 +383,7 @@ export default function TeamManagementPage() {
                 {/* Team Members List */}
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2 border-t border-slate-100 pt-5">
-                    <Activity size={16} className="text-emerald-500" /> Recent Member Contributions
+                    <Activity size={16} className="text-emerald-500" /> Recent Member Contributions (Top 10)
                   </h4>
                   <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                     <table className="w-full text-left">
@@ -409,7 +391,7 @@ export default function TeamManagementPage() {
                         <tr>
                           <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase">Member Phone</th>
                           <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase">Level</th>
-                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase">Comm. Rate</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase">VIP Plan</th>
                           <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase text-right">Contribution</th>
                         </tr>
                       </thead>
@@ -430,7 +412,7 @@ export default function TeamManagementPage() {
                                 </span>
                               </td>
                               <td className="px-4 py-3">
-                                <span className="text-sm font-bold text-emerald-600">{member.commissionRate}</span>
+                                <span className="text-sm font-bold text-indigo-600">{member.plan}</span>
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <span className="text-sm font-black text-slate-900">+ GHS {member.contribution.toFixed(2)}</span>
