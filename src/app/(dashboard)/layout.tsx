@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, [router]);
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-[#EDE9FE] flex justify-center">
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#EDE9FE] flex justify-center">
       <div className="w-full max-w-md bg-white h-full relative shadow-2xl flex flex-col">
 
         {/* Top Header */}
