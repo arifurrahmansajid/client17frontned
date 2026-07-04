@@ -42,6 +42,34 @@ export default function AdminReferralsPage() {
     }
   };
 
+  const handleApproveReferral = async (id: string) => {
+    if (!window.confirm("Are you sure you want to approve this referral and pay the inviter a GHS 30 commission?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("vip_token");
+      const res = await fetch(`${API_URL}/api/user/admin/referrals/approve/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success(data.message || "Referral approved successfully!");
+        fetchReferralsData(); // Refresh stats & list
+      } else {
+        toast.error(data.message || "Failed to approve referral");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error while approving referral");
+    }
+  };
+
   useEffect(() => {
     fetchReferralsData();
   }, []);
@@ -122,12 +150,13 @@ export default function AdminReferralsPage() {
                 <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
                 <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Reward (GHS)</th>
                 <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="text-right px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500 text-sm">
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-500 text-sm">
                     No referral connections found
                   </td>
                 </tr>
@@ -147,6 +176,16 @@ export default function AdminReferralsPage() {
                       }`}>
                         <span className="capitalize">{ref.status}</span>
                       </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right font-medium">
+                      {ref.status === "pending" && (
+                        <button
+                          onClick={() => handleApproveReferral(ref.id)}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                        >
+                          Approve
+                        </button>
+                      )}
                     </td>
                   </motion.tr>
                 ))
