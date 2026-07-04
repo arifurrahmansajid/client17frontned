@@ -113,7 +113,7 @@ export default function MinePage() {
       <div className="bg-gradient-to-br from-indigo-700 via-violet-600 to-purple-700 px-4 pt-6 pb-24 rounded-b-[40px] relative shadow-lg shadow-violet-500/30 shrink-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),transparent_60%)] rounded-b-[40px] pointer-events-none" />
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-        <h1 className="text-white font-black text-2xl mb-6 relative z-10 drop-shadow-sm tracking-tight">My Profile.</h1>
+        <h1 className="text-white font-black text-2xl mb-6 relative z-10 drop-shadow-sm tracking-tight">My Profile</h1>
       </div>
 
       <div className="-mt-20 px-4 space-y-4 relative z-20">
