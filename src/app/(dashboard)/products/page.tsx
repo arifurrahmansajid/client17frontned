@@ -11,6 +11,36 @@ export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [done, setDone] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const [myIncome, setMyIncome] = useState<number>(0);
+
+  const fetchUserData = async () => {
+    try {
+      const token = localStorage.getItem("vip_token");
+      if (!token) return;
+
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Fetch profile
+      const profRes = await fetch(`${API_URL}/api/user/me`, { headers });
+      if (profRes.ok) {
+        const profData = await profRes.json();
+        setProfile(profData);
+      }
+
+      // Fetch transactions for income
+      const txRes = await fetch(`${API_URL}/api/user/my-transactions`, { headers });
+      if (txRes.ok) {
+        const txData = await txRes.json();
+        const income = (txData || [])
+          .filter((t: any) => t.type === "income")
+          .reduce((sum: number, t: any) => sum + t.amount, 0);
+        setMyIncome(income);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     fetch(`${API_URL}/api/products`)
@@ -20,6 +50,8 @@ export default function ProductsPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    fetchUserData();
   }, []);
 
   const handleConfirmPurchase = async () => {
@@ -47,6 +79,7 @@ export default function ProductsPage() {
         toast.success("Purchase successful!");
         setConfirming(false);
         setDone(true);
+        fetchUserData(); // Refresh profile values
         setTimeout(() => { 
           setDone(false); 
           setSelectedProduct(null); 
@@ -76,11 +109,13 @@ export default function ProductsPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 to-violet-900/10" />
         <div className="absolute inset-x-0 bottom-0 flex justify-between px-6 py-4 bg-gradient-to-t from-indigo-950/95 via-violet-900/50 to-transparent">
           <div className="text-center backdrop-blur-sm bg-white/10 px-6 py-2.5 rounded-2xl border border-white/20 shadow-md">
-            <p className="text-white font-black text-xl leading-none drop-shadow-md">0</p>
+            <p className="text-white font-black text-xl leading-none drop-shadow-md">
+              {profile?.plan && profile.plan !== "None" ? "1" : "0"}
+            </p>
             <p className="text-indigo-200 text-[11px] mt-1.5 font-medium tracking-wide">My device</p>
           </div>
           <div className="text-center backdrop-blur-sm bg-white/10 px-6 py-2.5 rounded-2xl border border-white/20 shadow-md">
-            <p className="text-white font-black text-xl leading-none drop-shadow-md">GHS 0</p>
+            <p className="text-white font-black text-xl leading-none drop-shadow-md">GHS {myIncome.toLocaleString()}</p>
             <p className="text-indigo-200 text-[11px] mt-1.5 font-medium tracking-wide">My income</p>
           </div>
         </div>

@@ -10,12 +10,43 @@ export default function TeamManagementPage() {
   const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [paying, setPaying] = useState(false);
   
   // Modals state
   const [banModalOpen, setBanModalOpen] = useState(false);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
   const [banReason, setBanReason] = useState("");
+
+  const handlePayWeeklySalaries = async () => {
+    if (!window.confirm("Are you sure you want to distribute weekly wages to all qualified team leaders now?")) {
+      return;
+    }
+
+    setPaying(true);
+    try {
+      const token = localStorage.getItem("vip_token");
+      const res = await fetch(`${API_URL}/api/user/admin/pay-weekly-incentives`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success(data.message || "Weekly salaries paid successfully!");
+        fetchTeams(); // Refresh stats
+      } else {
+        toast.error(data.message || "Failed to distribute salaries.");
+      }
+    } catch (err) {
+      toast.error("Network error while distributing salaries.");
+    } finally {
+      setPaying(false);
+    }
+  };
 
   const fetchTeams = async () => {
     try {
@@ -128,15 +159,29 @@ export default function TeamManagementPage() {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Team Management</h1>
           <p className="text-slate-500 text-sm mt-1">Monitor teams by Invitation Code and manage their members.</p>
         </div>
-        <div className="relative w-full sm:w-72">
-          <input 
-            type="text" 
-            placeholder="Search code or phone..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary shadow-sm"
-          />
-          <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button
+            onClick={handlePayWeeklySalaries}
+            disabled={paying}
+            className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold rounded-xl text-sm flex items-center gap-1.5 shadow-md shadow-emerald-500/25 active:scale-95 disabled:opacity-75 shrink-0"
+          >
+            {paying ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              "Pay Weekly Salaries"
+            )}
+          </button>
+          
+          <div className="relative w-full sm:w-72">
+            <input 
+              type="text" 
+              placeholder="Search code or phone..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary shadow-sm"
+            />
+            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          </div>
         </div>
       </div>
 

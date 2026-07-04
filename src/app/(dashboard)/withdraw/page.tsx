@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, ChevronRight, Info, AlertCircle } from "lucide-react";
+import { ArrowLeft, ChevronRight, Info, AlertCircle, Landmark } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { WITHDRAW_RULES } from "@/lib/data";
 import { API_URL } from "@/lib/api";
@@ -11,7 +11,8 @@ export default function WithdrawPage() {
   const router = useRouter();
   const [amount, setAmount] = useState("");
   const [balance, setBalance] = useState(0);
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+  const [wallets, setWallets] = useState<any[]>([]);
+  const [activeWallet, setActiveWallet] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [minWithdrawal, setMinWithdrawal] = useState(30);
   const [taxRate, setTaxRate] = useState(0.15);
@@ -42,6 +43,22 @@ export default function WithdrawPage() {
           setTaxRate((settingsData.settings.withdrawFee || 15) / 100);
         }
       }
+
+      // 3. Fetch Wallets list
+      const walletsRes = await fetch(`${API_URL}/api/user/wallets`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (walletsRes.ok) {
+        const walletsData = await walletsRes.json();
+        if (walletsData.success) {
+          const list = walletsData.wallets || [];
+          setWallets(list);
+          const def = list.find((w: any) => w.isDefault) || list[0] || null;
+          setActiveWallet(def);
+        }
+      }
     } catch (err) {
       console.error("Failed to fetch profile or settings:", err);
     } finally {
@@ -68,6 +85,11 @@ export default function WithdrawPage() {
       return;
     }
 
+    if (!activeWallet) {
+      toast.error("Please add and select a withdrawal wallet account first");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
       if (!token) {
@@ -81,7 +103,10 @@ export default function WithdrawPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ amount: numericAmount })
+        body: JSON.stringify({ 
+          amount: numericAmount,
+          walletDetails: `${activeWallet.label} (${activeWallet.number})`
+        })
       });
 
       const data = await res.json();
@@ -112,12 +137,12 @@ export default function WithdrawPage() {
 
       <div className="px-4 pt-4 space-y-4">
         {/* Balance Banner */}
-        <div className="bg-gradient-to-r from-primary to-blue-700 rounded-3xl p-5 shadow-lg shadow-primary/20">
+        <div className="bg-gradient-to-r from-indigo-600 to-violet-700 rounded-3xl p-5 shadow-lg shadow-indigo-600/20">
           <p className="text-white/70 text-xs font-medium mb-1">Available Balance</p>
           <p className="text-3xl font-black text-white">GHS {loading ? "..." : balance.toLocaleString()}</p>
           <div className="mt-3 flex items-center gap-2">
             <Info size={14} className="text-white/60" />
-            <p className="text-white/70 text-xs">3 withdrawals remaining today</p>
+            <p className="text-white/70 text-xs">Processing fees are {taxRate * 100}%</p>
           </div>
         </div>
 
@@ -126,14 +151,23 @@ export default function WithdrawPage() {
           <h3 className="font-bold text-slate-900 mb-3">Withdrawal Wallet</h3>
           <button
             onClick={() => router.push("/wallet-accounts")}
-            className="w-full flex items-center gap-4 p-3.5 border-2 border-dashed border-slate-200 rounded-2xl hover:border-primary hover:bg-blue-50/50 transition-all"
+            className="w-full flex items-center gap-4 p-3.5 border-2 border-slate-100 rounded-2xl hover:border-indigo-600 hover:bg-indigo-50/20 transition-all"
           >
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-              <ChevronRight size={20} className="text-slate-500" />
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <Landmark size={20} />
             </div>
-            <span className="text-sm font-medium text-slate-500 flex-1 text-left">
-              {selectedWallet ? selectedWallet : "Select withdrawal wallet account"}
-            </span>
+            <div className="text-left flex-1">
+              {activeWallet ? (
+                <>
+                  <p className="text-sm font-bold text-slate-800">{activeWallet.label}</p>
+                  <p className="text-xs text-slate-500">{activeWallet.number}</p>
+                </>
+              ) : (
+                <span className="text-sm font-semibold text-slate-400">
+                  Select / Add withdrawal wallet account
+                </span>
+              )}
+            </div>
             <ChevronRight size={18} className="text-slate-400" />
           </button>
         </div>
@@ -148,72 +182,47 @@ export default function WithdrawPage() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              min={minWithdrawal}
-              max={balance}
-              className="w-full h-14 pl-16 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-bold text-slate-800"
             />
           </div>
-
-          {/* Quick amounts */}
-          <div className="flex gap-2 mt-3">
-            {[100, 200, 500, 1000].map((v) => (
-              <button key={v} onClick={() => setAmount(String(v))}
-                className={`flex-1 py-1.5 rounded-xl text-xs font-bold border transition-all ${parseFloat(amount) === v ? "bg-primary text-white border-primary" : "border-slate-200 text-slate-600 hover:border-primary hover:text-primary"}`}>
-                {v}
-              </button>
-            ))}
-          </div>
+          {numericAmount > 0 && (
+            <div className="mt-4 p-3.5 bg-slate-50 border border-slate-100 rounded-2xl space-y-1.5 text-xs text-slate-500">
+              <div className="flex justify-between">
+                <span>Fee ({taxRate * 100}%):</span>
+                <span className="font-semibold text-red-500">- GHS {tax.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm font-bold text-slate-700 pt-1.5 border-t border-slate-200">
+                <span>Amount to receive:</span>
+                <span className="text-indigo-600">GHS {received > 0 ? received.toFixed(2) : "0.00"}</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Summary */}
-        {numericAmount > 0 && (
-          <div className="bg-slate-900 rounded-3xl p-5 shadow-lg space-y-3">
-            <h3 className="font-bold text-white text-sm">Summary</h3>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Withdrawal Amount</span>
-              <span className="text-white font-semibold">GHS {numericAmount.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Tax ({(taxRate * 100).toFixed(0)}%)</span>
-              <span className="text-red-400 font-semibold">- GHS {tax.toFixed(2)}</span>
-            </div>
-            <div className="border-t border-slate-700 pt-3 flex justify-between">
-              <span className="text-slate-300 font-medium">You Receive</span>
-              <span className="text-emerald-400 font-black text-lg">GHS {received.toFixed(2)}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Warning */}
-        {numericAmount > 0 && numericAmount < minWithdrawal && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-3 flex items-center gap-2">
-            <AlertCircle size={16} className="text-red-500 shrink-0" />
-            <p className="text-sm text-red-600 font-medium">Minimum withdrawal is GHS {minWithdrawal}</p>
-          </div>
-        )}
-
+        {/* Action Button */}
         <button
           onClick={handleWithdraw}
-          disabled={numericAmount < minWithdrawal || !numericAmount || numericAmount > balance}
-          className="w-full h-14 bg-primary text-white font-bold rounded-2xl text-base shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-12 bg-gradient-to-r from-indigo-600 to-violet-700 text-white font-bold rounded-2xl shadow-lg shadow-indigo-600/20 hover:opacity-95 active:scale-[0.98] transition-all text-sm uppercase tracking-wide"
         >
-          Withdraw Immediately
+          Submit Withdrawal Request
         </button>
 
         {/* Rules */}
         <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm">
-          <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Info size={18} className="text-primary" />
-            Withdrawal Rules
+          <h3 className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-1.5">
+            <AlertCircle size={16} className="text-indigo-500" />
+            Withdrawal Instructions
           </h3>
-          <div className="space-y-3">
-            {WITHDRAW_RULES.map((rule, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                <p className="text-sm text-slate-600 leading-relaxed">{rule}</p>
-              </div>
+          <ul className="space-y-2.5">
+            {WITHDRAW_RULES.map((rule, idx) => (
+              <li key={idx} className="flex gap-2.5 items-start text-[13px] text-slate-500 leading-relaxed font-medium">
+                <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
+                  {idx + 1}
+                </span>
+                <span>{rule}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
     </div>

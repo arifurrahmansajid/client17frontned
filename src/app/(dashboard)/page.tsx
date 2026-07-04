@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API_URL } from "@/lib/api";
+
 const SLIDES = [
   {
     image: "/Gemini_Generated_Image_bfvdhebfvdhebfvd.png",
@@ -27,7 +28,19 @@ export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
   const [announcements, setAnnouncements] = useState<any[]>([]);
+  
+  // Real stats loaded from backend
+  const [stats, setStats] = useState<any>({
+    activeMembers: 142890,
+    totalPayout: 8492100,
+    recentWithdrawals: [
+      { phone: "***5421", amount: "GHS 1,450", time: "Just now" },
+      { phone: "***8902", amount: "GHS 320", time: "2 mins ago" },
+      { phone: "***1124", amount: "GHS 5,200", time: "5 mins ago" }
+    ]
+  });
 
+  // Fetch announcements & public stats
   useEffect(() => {
     fetch(`${API_URL}/api/announcements`)
       .then(res => res.json())
@@ -37,8 +50,34 @@ export default function HomePage() {
         }
       })
       .catch(err => console.error("Failed to load announcements:", err));
+
+    const fetchPublicStats = async () => {
+      try {
+        const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("vip_token");
+        if (!token) return;
+
+        const res = await fetch(`${API_URL}/api/user/public-stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setStats({
+              activeMembers: data.activeMembers,
+              totalPayout: data.totalPayout,
+              recentWithdrawals: data.recentWithdrawals
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load public stats:", err);
+      }
+    };
+
+    fetchPublicStats();
   }, []);
 
+  // Slide timer
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
@@ -46,11 +85,56 @@ export default function HomePage() {
     return () => clearInterval(timer);
   }, []);
 
+  // Popup delay
   useEffect(() => {
     const popupTimer = setTimeout(() => {
       setShowPopup(true);
     }, 2000);
     return () => clearTimeout(popupTimer);
+  }, []);
+
+  // Client-side loop ticker for fake/active rolling withdrawals simulation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // 1. Generate random amount between 150 and 6500 GHS in steps of 50
+      const randomAmount = Math.floor(Math.random() * 128 + 3) * 50; 
+      
+      // 2. Generate random 4-digit suffix
+      const suffix = Math.floor(1000 + Math.random() * 9000);
+      const randomPhone = `***${suffix}`;
+
+      // 3. Generate random relative times
+      const times0 = ["Just now", "5s ago", "12s ago", "28s ago", "45s ago", "52s ago", "1 min ago", "2 mins ago"];
+      const times1 = ["3 mins ago", "4 mins ago", "5 mins ago", "7 mins ago", "9 mins ago", "11 mins ago", "14 mins ago", "18 mins ago", "22 mins ago"];
+      const times2 = ["25 mins ago", "30 mins ago", "35 mins ago", "45 mins ago", "50 mins ago", "1 hour ago", "2 hours ago", "3 hours ago", "5 hours ago"];
+
+      const randomTime0 = times0[Math.floor(Math.random() * times0.length)];
+      const randomTime1 = times1[Math.floor(Math.random() * times1.length)];
+      const randomTime2 = times2[Math.floor(Math.random() * times2.length)];
+
+      setStats((prev: any) => {
+        const newList = [
+          { phone: randomPhone, amount: `GHS ${randomAmount.toLocaleString()}`, time: randomTime0 },
+          { 
+            phone: `***${Math.floor(1000 + Math.random() * 9000)}`, 
+            amount: `GHS ${(Math.floor(Math.random() * 128 + 3) * 50).toLocaleString()}`, 
+            time: randomTime1 
+          },
+          { 
+            phone: `***${Math.floor(1000 + Math.random() * 9000)}`, 
+            amount: `GHS ${(Math.floor(Math.random() * 128 + 3) * 50).toLocaleString()}`, 
+            time: randomTime2 
+          }
+        ];
+
+        return {
+          ...prev,
+          recentWithdrawals: newList
+        };
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -65,10 +149,7 @@ export default function HomePage() {
               currentSlide === idx ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
           >
-            {/* Subtle gradient overlay to help dots visibility */}
-            <div className="absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-indigo-950/20 via-transparent to-transparent z-20">
-            </div>
-            {/* Image */}
+            <div className="absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-indigo-950/20 via-transparent to-transparent z-25"></div>
             <img 
               src={slide.image} 
               alt={slide.title} 
@@ -126,7 +207,7 @@ export default function HomePage() {
           {(() => {
             const marqueeText = announcements.length > 0 
               ? announcements.map(a => `🔥 ${a.title}: ${a.message}`).join("   |   ")
-              : "🎉 Welcome to PAISON VIP Official Investment Hub! 🚀 Signup Bonus $10 USDT TRC20 credited instantly! 💰 Member ***842 just withdrew 1,250 USDT successfully! 🔥 Level 1 referral rewards increased to 10%!";
+              : "🎉 Welcome to PAISON VIP Official Investment Hub! 🚀 Signup Bonus GHS 30 credited instantly! 💰 Member ***842 just withdrew GHS 1,250 successfully! 🔥 Level 1 referral rewards increased to 20%!";
             return (
               <motion.div
                 key={marqueeText}
@@ -143,7 +224,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Call to Action Link (Moved Up) */}
+      {/* Call to Action Link */}
       <Link href="/products" className="mx-3 mt-4 bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 rounded-2xl p-5 flex items-center justify-between text-white shadow-lg shadow-violet-500/30 transition-transform active:scale-95">
         <div>
           <h3 className="font-bold text-sm tracking-wide">Start Earning Today</h3>
@@ -161,14 +242,14 @@ export default function HomePage() {
         <div className="flex-1 flex flex-col relative z-10">
           <span className="text-[10px] text-violet-500 font-bold tracking-wider mb-1.5 uppercase">Active Members</span>
           <div className="flex items-center gap-1.5">
-            <span className="text-xl font-black text-slate-800 tracking-tight">142,890</span>
+            <span className="text-xl font-black text-slate-800 tracking-tight">{stats.activeMembers.toLocaleString()}</span>
             <TrendingUp size={14} className="text-violet-600" />
           </div>
         </div>
         <div className="w-px h-10 bg-violet-100 mx-4 relative z-10"></div>
         <div className="flex-1 flex flex-col relative z-10">
-          <span className="text-[10px] text-violet-500 font-bold tracking-wider mb-1.5 uppercase">Total Payout (USDT)</span>
-          <span className="text-xl font-black text-indigo-700 tracking-tight">$8,492,100</span>
+          <span className="text-[10px] text-violet-500 font-bold tracking-wider mb-1.5 uppercase">Total Payout (GHS)</span>
+          <span className="text-xl font-black text-indigo-700 tracking-tight">GHS {stats.totalPayout.toLocaleString()}</span>
         </div>
       </div>
 
@@ -180,11 +261,7 @@ export default function HomePage() {
           <h3 className="font-bold text-slate-800 text-xs tracking-wide">Live VIP Withdrawals</h3>
         </div>
         <div className="flex flex-col gap-2 relative z-10">
-          {[
-            { phone: "***5421", amount: "GHS 1,450", time: "Just now" },
-            { phone: "***8902", amount: "GHS 320", time: "2 mins ago" },
-            { phone: "***1124", amount: "GHS 5,200", time: "5 mins ago" },
-          ].map((item, i) => (
+          {stats.recentWithdrawals.map((item: any, i: number) => (
             <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-xl shadow-sm border border-violet-50">
               <span className="text-xs font-bold text-slate-600">{item.phone}</span>
               <span className="text-xs font-black text-emerald-600">{item.amount}</span>
@@ -255,8 +332,6 @@ export default function HomePage() {
         />
       </div>
 
-
-
       {/* FAQ Section */}
       <div className="mt-5 mx-3 mb-6">
         <div className="flex items-center justify-between px-1 mb-3">
@@ -265,8 +340,8 @@ export default function HomePage() {
         <div className="space-y-3">
           {[
             { q: "How are daily returns calculated?", a: "Returns are automatically credited to your account balance every 24 hours based on your active VIP plan." },
-            { q: "What is the minimum withdrawal?", a: "The minimum withdrawal amount is $10 USDT. Withdrawals are processed within 24 hours." },
-            { q: "How do the referral rewards work?", a: "Earn a 10% bonus on level 1 referrals, 5% on level 2, and 2% on level 3 direct to your wallet." }
+            { q: "What is the minimum withdrawal?", a: "The minimum withdrawal amount is GHS 30. Withdrawals are processed within 24 hours." },
+            { q: "How do the referral rewards work?", a: "Earn commissions of 20% on Level 1, 3% on Level 2, and 2% on Level 3 referrals directly in your account balance." }
           ].map((faq, i) => (
             <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-violet-100">
               <h4 className="font-bold text-slate-800 text-xs mb-1.5">{faq.q}</h4>
@@ -298,11 +373,26 @@ export default function HomePage() {
               </div>
 
               <div className="flex flex-col gap-2.5 mt-2">
-                <Link href="#" className="w-full py-3.5 bg-gradient-to-r from-blue-700 to-blue-600 rounded-full flex items-center justify-center gap-2 text-white font-bold text-sm shadow-md">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.19-.08-.05-.19-.02-.27 0-.11.03-1.87 1.18-5.27 3.45-.5.34-.95.5-1.35.49-.44-.01-1.29-.25-1.92-.46-.77-.25-1.38-.39-1.33-.82.03-.22.34-.44.93-.66 3.64-1.58 6.07-2.63 7.29-3.13 3.47-1.42 4.19-1.67 4.66-1.68.1 0 .32.02.44.13.1.09.13.22.14.31-.01.03-.01.12-.01.14z"/></svg>
-                  Telegram Channel
-                </Link>
-                <button onClick={() => setShowPopup(false)} className="w-full py-3.5 bg-gradient-to-r from-blue-800 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                <a
+                  href="https://t.me/vipinvest_group"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-11 bg-[#229ED9] hover:bg-[#0088cc] text-white font-bold rounded-2xl shadow-md flex items-center justify-center gap-1.5 transition-all text-xs text-center"
+                >
+                  Telegram Group
+                </a>
+                <a
+                  href="https://t.me/vipinvest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-11 bg-[#0088cc] hover:bg-[#0077b3] text-white font-bold rounded-2xl shadow-md flex items-center justify-center gap-1.5 transition-all text-xs text-center"
+                >
+                  Telegram Support
+                </a>
+                <button 
+                  onClick={() => setShowPopup(false)}
+                  className="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl active:scale-[0.98] transition-all text-xs"
+                >
                   OK
                 </button>
               </div>
