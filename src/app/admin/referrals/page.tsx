@@ -1,18 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Users, GitBranch, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
-
-const REFERRALS = [
-  { id: 1, inviter: "+233 55 123 4567", invitee: "+233 50 987 6543", date: "2026-06-30", reward: 50, status: "completed" },
-  { id: 2, inviter: "+233 24 456 7890", invitee: "+233 27 321 9876", date: "2026-06-29", reward: 0, status: "pending" },
-  { id: 3, inviter: "+233 55 123 4567", invitee: "+233 20 654 3210", date: "2026-06-28", reward: 25, status: "completed" },
-];
+import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function AdminReferralsPage() {
   const [search, setSearch] = useState("");
-  const filtered = REFERRALS.filter(r => r.inviter.includes(search) || r.invitee.includes(search));
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalReferrals: 0,
+    totalRewardsPaid: 0,
+    pendingInvites: 0
+  });
+  const [referrals, setReferrals] = useState<any[]>([]);
+
+  const fetchReferralsData = async () => {
+    try {
+      const token = localStorage.getItem("vip_token");
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/api/user/admin/referrals`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setStats(data.stats);
+          setReferrals(data.referrals || []);
+        }
+      } else {
+        toast.error("Failed to load referral logs");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error while loading referrals");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReferralsData();
+  }, []);
+
+  const filtered = referrals.filter(r => 
+    (r.inviter && r.inviter.includes(search)) || 
+    (r.invitee && r.invitee.includes(search))
+  );
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-500 text-sm">
+        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-2" />
+        Loading referral tree...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -31,7 +77,7 @@ export default function AdminReferralsPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-500">Total Referrals</p>
-            <p className="text-2xl font-black text-slate-900">1,284</p>
+            <p className="text-2xl font-black text-slate-900">{stats.totalReferrals.toLocaleString()}</p>
           </div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
@@ -40,7 +86,7 @@ export default function AdminReferralsPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-500">Total Rewards Paid</p>
-            <p className="text-2xl font-black text-slate-900">GHS 45,200</p>
+            <p className="text-2xl font-black text-slate-900">GHS {stats.totalRewardsPaid.toLocaleString()}</p>
           </div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
@@ -49,7 +95,7 @@ export default function AdminReferralsPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-500">Pending Invites</p>
-            <p className="text-2xl font-black text-slate-900">89</p>
+            <p className="text-2xl font-black text-slate-900">{stats.pendingInvites.toLocaleString()}</p>
           </div>
         </div>
       </div>
@@ -57,8 +103,12 @@ export default function AdminReferralsPage() {
       {/* Search */}
       <div className="relative">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Inviter or Invitee phone..."
-          className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" />
+        <input 
+          value={search} 
+          onChange={e => setSearch(e.target.value)} 
+          placeholder="Search by Inviter or Invitee phone..."
+          className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" 
+        />
       </div>
 
       {/* Table */}
@@ -75,24 +125,32 @@ export default function AdminReferralsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map((ref, idx) => (
-                <motion.tr key={ref.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.04 }}
-                  className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3.5 font-bold text-slate-900">{ref.inviter}</td>
-                  <td className="px-4 py-3.5 font-medium text-slate-700">{ref.invitee}</td>
-                  <td className="px-4 py-3.5 text-slate-500 text-xs font-medium">{ref.date}</td>
-                  <td className="px-4 py-3.5 font-black text-slate-900">
-                    {ref.reward > 0 ? `+${ref.reward}` : "-"}
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500 text-sm">
+                    No referral connections found
                   </td>
-                  <td className="px-4 py-3.5">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
-                      ref.status === "completed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                    }`}>
-                      <span className="capitalize">{ref.status}</span>
-                    </span>
-                  </td>
-                </motion.tr>
-              ))}
+                </tr>
+              ) : (
+                filtered.map((ref, idx) => (
+                  <motion.tr key={ref.id || idx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.02 }}
+                    className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3.5 font-bold text-slate-900">{ref.inviter}</td>
+                    <td className="px-4 py-3.5 font-medium text-slate-700">{ref.invitee}</td>
+                    <td className="px-4 py-3.5 text-slate-500 text-xs font-medium">{ref.date}</td>
+                    <td className="px-4 py-3.5 font-black text-slate-900">
+                      {ref.reward > 0 ? `+${ref.reward}` : "-"}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                        ref.status === "completed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                      }`}>
+                        <span className="capitalize">{ref.status}</span>
+                      </span>
+                    </td>
+                  </motion.tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
