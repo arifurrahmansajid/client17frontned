@@ -69,7 +69,7 @@ export default function ProductsPage() {
       {/* Top Banner */}
       <div className="w-full relative aspect-[16/9] bg-indigo-950 shrink-0 shadow-md overflow-hidden">
         <img
-          src="/Gemini_Generated_Image_no7xd9no7xd9no7x.png"
+          src="/Gemini_Generated_Image_8qh20z8qh20z8qh2.png"
           alt="VIP Investment"
           className="absolute inset-0 w-full h-full object-cover opacity-90"
         />

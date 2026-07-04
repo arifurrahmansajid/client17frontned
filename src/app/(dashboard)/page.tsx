@@ -7,17 +7,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { API_URL } from "@/lib/api";
 const SLIDES = [
   {
-    image: "/Gemini_Generated_Image_u3l7yeu3l7yeu3l7 (1).png",
+    image: "/Gemini_Generated_Image_bfvdhebfvdhebfvd.png",
     title: "Premium Panasonic Series",
     desc: "Invest in the world's leading massage chair technology and start earning."
   },
   {
-    image: "/Gemini_Generated_Image_u3l7yeu3l7yeu3l7.jpeg",
+    image: "/Gemini_Generated_Image_m4c314m4c314m4c3 (1).png",
     title: "Daily Passive Income",
     desc: "Watch your wealth grow with automated daily returns on your VIP device."
   },
   {
-    image: "/Gemini_Generated_Image_u3l7yeu3l7yeu3l7.png",
+    image: "/Gemini_Generated_Image_oh28kqoh28kqoh28.png",
     title: "Global Investment Platform",
     desc: "Join thousands of smart investors securing their financial future."
   }
